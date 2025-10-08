@@ -684,7 +684,8 @@ header p {
 }
 
 /* Configuration Section */
-.config-section {
+.config-section,
+.map-section {
     background: white;
     border-radius: 15px;
     padding: 30px;
@@ -692,13 +693,15 @@ header p {
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
-.config-section h2 {
+.config-section h2,
+.map-section h2 {
     color: #333;
     margin-bottom: 10px;
     font-size: 1.8rem;
 }
 
-.config-section p {
+.config-section p,
+.map-section p {
     color: #666;
     margin-bottom: 25px;
 }

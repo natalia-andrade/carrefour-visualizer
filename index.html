@@ -17,6 +17,7 @@
 
         <nav class="tab-navigation">
             <button class="tab-button active" data-tab="shopping">📝 Lista de Compras</button>
+            <button class="tab-button" data-tab="map">🗺️ Mapa do Mercado</button>
             <button class="tab-button" data-tab="config">⚙️ Configuração</button>
         </nav>
 
@@ -66,8 +67,15 @@
                     <!-- Sectors configuration will be generated here -->
                 </div>
             </div>
+        </div>
 
-            <div class="supermarket-grid" id="supermarketGrid">
+        <div id="mapPage" class="page-content">
+            <div class="map-section">
+                <h2>🗺️ Mapa do Mercado</h2>
+                <p>Visualização geral dos setores do supermercado</p>
+            </div>
+
+            <div class="supermarket-grid" id="supermarketGridMap">
                 <!-- Sectors will be dynamically generated here -->
             </div>
         </div>

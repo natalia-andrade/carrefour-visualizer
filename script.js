@@ -707,7 +707,22 @@ function switchTab(tabName) {
     } else if (tabName === 'config') {
         document.getElementById('configPage').classList.add('active');
         renderConfigPage();
+    } else if (tabName === 'map') {
+        document.getElementById('mapPage').classList.add('active');
+        renderMapPage();
     }
+}
+
+// Render map page
+function renderMapPage() {
+    const grid = document.getElementById('supermarketGridMap');
+    grid.innerHTML = '';
+
+    Object.keys(supermarketData).sort((a, b) => parseInt(a) - parseInt(b)).forEach(sectorNumber => {
+        const sector = supermarketData[sectorNumber];
+        const card = createSectorCard(sectorNumber, sector);
+        grid.appendChild(card);
+    });
 }
 
 // Render configuration page
