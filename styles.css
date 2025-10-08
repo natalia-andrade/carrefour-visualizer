@@ -9,6 +9,8 @@ body {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     min-height: 100vh;
     padding: 20px;
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+    -webkit-touch-callout: none;
 }
 
 .container {
@@ -853,25 +855,36 @@ header p {
     background: #d32f2f;
 }
 
-/* Responsive design */
+/* Responsive design - Tablet */
 @media (max-width: 768px) {
+    body {
+        padding: 10px;
+    }
+
     header h1 {
-        font-size: 2rem;
+        font-size: 1.8rem;
+    }
+
+    header p {
+        font-size: 1rem;
     }
 
     .tab-navigation {
-        flex-direction: column;
-        gap: 5px;
+        gap: 8px;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 10px 0;
+        margin: -10px -10px 20px -10px;
+        padding-left: 10px;
+        padding-right: 10px;
     }
 
     .tab-button {
-        padding: 12px 20px;
-        font-size: 1rem;
-        border-radius: 8px;
-    }
-
-    .tab-button.active::after {
-        display: none;
+        padding: 16px 24px;
+        font-size: 1.1rem;
+        min-height: 50px;
     }
 
     .grocery-list-section,
@@ -896,7 +909,8 @@ header p {
     }
 
     .result-sector-card {
-        padding: 15px;
+        padding: 18px;
+        font-size: 1.05rem;
     }
 
     .supermarket-grid {
@@ -912,12 +926,69 @@ header p {
         padding: 20px;
         width: 95%;
     }
+
+    /* Larger touch targets */
+    #analyzeButton,
+    .clear-button,
+    .reset-button,
+    .action-button {
+        min-height: 50px;
+        font-size: 1.1rem;
+        padding: 16px 32px;
+    }
+
+    #groceryListInput {
+        min-height: 180px;
+        font-size: 1.1rem;
+        padding: 18px;
+    }
 }
 
+/* Responsive design - Mobile */
 @media (max-width: 480px) {
+    body {
+        padding: 8px;
+    }
+
+    header h1 {
+        font-size: 1.5rem;
+    }
+
+    header p {
+        font-size: 0.9rem;
+    }
+
+    .tab-navigation {
+        gap: 6px;
+        margin: -8px -8px 15px -8px;
+        padding: 8px;
+    }
+
+    .tab-button {
+        padding: 18px 20px;
+        font-size: 1rem;
+        min-height: 54px;
+        flex: 1;
+    }
+
+    .tab-button.active::after {
+        display: none;
+    }
+
+    .grocery-list-section,
+    .config-section {
+        padding: 16px;
+    }
+
+    .grocery-list-section h2,
+    .config-section h2 {
+        font-size: 1.4rem;
+    }
+
+    /* Aisle layout becomes single column */
     .aisle-container {
         grid-template-columns: 1fr;
-        gap: 20px;
+        gap: 15px;
     }
 
     .aisle-corridor {
@@ -926,12 +997,181 @@ header p {
 
     .aisle-left,
     .aisle-right {
-        padding: 10px;
+        padding: 0;
+        gap: 15px;
     }
 
     .entrance-marker,
     .checkout-marker {
+        font-size: 1.1rem;
+        padding: 16px;
+        min-height: 54px;
+    }
+
+    .result-sector-card {
+        padding: 20px;
+        font-size: 1.1rem;
+    }
+
+    .result-sector-name {
+        font-size: 1.3rem;
+    }
+
+    .result-sector-items li {
+        padding: 14px;
         font-size: 1rem;
+        min-height: 48px;
+    }
+
+    .result-sector-items li::before {
+        font-size: 1.4rem;
+    }
+
+    /* Better touch targets for buttons */
+    #analyzeButton,
+    .clear-button {
+        min-height: 54px;
+        font-size: 1.15rem;
+        padding: 18px 36px;
+    }
+
+    .button-group {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .button-group button {
+        width: 100%;
+    }
+
+    #groceryListInput {
+        min-height: 200px;
+        font-size: 1.15rem;
+        padding: 20px;
+    }
+
+    .reset-button {
+        min-height: 48px;
+        padding: 14px 24px;
+        font-size: 1rem;
+    }
+
+    .progress-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .progress-header h3 {
+        font-size: 1.2rem;
+        margin-bottom: 10px;
+    }
+
+    .progress-info {
+        font-size: 1.1rem;
+    }
+
+    .progress-bar {
+        height: 36px;
+    }
+
+    /* Config page mobile optimization */
+    .config-actions {
+        flex-direction: column;
+    }
+
+    .action-button {
+        width: 100%;
+        min-height: 54px;
+        font-size: 1.1rem;
+        padding: 18px;
+    }
+
+    .sector-config-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .sector-config-title {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .sector-config-title input {
+        width: 100%;
+        font-size: 1.2rem;
         padding: 12px;
+    }
+
+    .sector-config-actions {
+        width: 100%;
+        margin-top: 10px;
+    }
+
+    .small-button {
+        flex: 1;
+        padding: 12px 18px;
+        font-size: 1rem;
+        min-height: 48px;
+    }
+
+    .product-item {
+        padding: 14px;
+        min-height: 56px;
+    }
+
+    .product-item input {
+        font-size: 1.1rem;
+        padding: 10px;
+    }
+
+    .product-item button {
+        padding: 10px 16px;
+        font-size: 1rem;
+        min-width: 48px;
+        min-height: 48px;
+    }
+
+    /* Modal improvements */
+    .modal-content {
+        padding: 20px;
+        width: 96%;
+        max-height: 85vh;
+    }
+
+    .close {
+        font-size: 36px;
+        padding: 10px;
+        min-width: 48px;
+        min-height: 48px;
+    }
+
+    #modalTitle {
+        font-size: 1.3rem;
+    }
+
+    #modalList li {
+        padding: 16px;
+        font-size: 1.1rem;
+    }
+
+    /* Supermarket grid view */
+    .supermarket-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+
+    .sector-card {
+        padding: 20px;
+        min-height: 100px;
+    }
+
+    .sector-name {
+        font-size: 1.3rem;
+    }
+
+    .sector-number {
+        font-size: 1rem;
+        padding: 8px 18px;
     }
 }
