@@ -33,6 +33,69 @@ header p {
     opacity: 0.9;
 }
 
+/* Tab Navigation */
+.tab-navigation {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 30px;
+    border-bottom: 3px solid rgba(255, 255, 255, 0.2);
+    padding-bottom: 10px;
+}
+
+.tab-button {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    border-radius: 10px 10px 0 0;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.tab-button:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.tab-button.active {
+    background: white;
+    color: #667eea;
+    box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.tab-button.active::after {
+    content: '';
+    position: absolute;
+    bottom: -3px;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: white;
+}
+
+/* Page Content */
+.page-content {
+    display: none;
+}
+
+.page-content.active {
+    display: block;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 /* Grocery List Section */
 .grocery-list-section {
     background: white;
@@ -618,13 +681,201 @@ header p {
     }
 }
 
+/* Configuration Section */
+.config-section {
+    background: white;
+    border-radius: 15px;
+    padding: 30px;
+    margin-bottom: 30px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.config-section h2 {
+    color: #333;
+    margin-bottom: 10px;
+    font-size: 1.8rem;
+}
+
+.config-section p {
+    color: #666;
+    margin-bottom: 25px;
+}
+
+.config-actions {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+}
+
+.action-button {
+    background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    font-size: 1rem;
+    font-weight: bold;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 3px 8px rgba(76, 175, 80, 0.3);
+}
+
+.action-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 12px rgba(76, 175, 80, 0.4);
+}
+
+.action-button.danger {
+    background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%);
+    box-shadow: 0 3px 8px rgba(255, 152, 0, 0.3);
+}
+
+.action-button.danger:hover {
+    box-shadow: 0 5px 12px rgba(255, 152, 0, 0.4);
+}
+
+.sectors-config {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.sector-config-card {
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 20px;
+    border-left: 5px solid var(--sector-color, #667eea);
+}
+
+.sector-config-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.sector-config-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+}
+
+.sector-config-title input {
+    font-size: 1.2rem;
+    font-weight: bold;
+    border: 2px solid transparent;
+    background: transparent;
+    padding: 5px 10px;
+    border-radius: 5px;
+    transition: all 0.3s;
+}
+
+.sector-config-title input:focus {
+    border-color: #667eea;
+    background: white;
+    outline: none;
+}
+
+.sector-config-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.small-button {
+    padding: 8px 15px;
+    font-size: 0.9rem;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: bold;
+}
+
+.small-button.add {
+    background: #4CAF50;
+    color: white;
+}
+
+.small-button.delete {
+    background: #f44336;
+    color: white;
+}
+
+.small-button:hover {
+    opacity: 0.8;
+    transform: scale(1.05);
+}
+
+.products-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.product-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: white;
+    padding: 10px 15px;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+}
+
+.product-item input {
+    flex: 1;
+    border: 1px solid transparent;
+    padding: 5px;
+    border-radius: 5px;
+    transition: all 0.2s;
+}
+
+.product-item input:focus {
+    border-color: #667eea;
+    outline: none;
+}
+
+.product-item button {
+    padding: 5px 10px;
+    background: #f44336;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.85rem;
+}
+
+.product-item button:hover {
+    background: #d32f2f;
+}
+
 /* Responsive design */
 @media (max-width: 768px) {
     header h1 {
         font-size: 2rem;
     }
 
-    .grocery-list-section {
+    .tab-navigation {
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .tab-button {
+        padding: 12px 20px;
+        font-size: 1rem;
+        border-radius: 8px;
+    }
+
+    .tab-button.active::after {
+        display: none;
+    }
+
+    .grocery-list-section,
+    .config-section {
         padding: 20px;
     }
 

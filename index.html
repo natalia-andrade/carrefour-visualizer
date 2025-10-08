@@ -10,10 +10,16 @@
     <div class="container">
         <header>
             <h1>🛒 Mapa do Supermercado</h1>
-            <p>Clique em um setor para ver os produtos disponíveis</p>
+            <p>Sistema de gerenciamento de compras</p>
         </header>
 
-        <div class="grocery-list-section">
+        <nav class="tab-navigation">
+            <button class="tab-button active" data-tab="shopping">📝 Lista de Compras</button>
+            <button class="tab-button" data-tab="config">⚙️ Configuração</button>
+        </nav>
+
+        <div id="shoppingPage" class="page-content active">
+            <div class="grocery-list-section">
             <h2>📝 Minha Lista de Compras</h2>
             <textarea id="groceryListInput" placeholder="Digite sua lista de compras (um item por linha)&#10;Exemplo:&#10;Maçã&#10;Leite&#10;Pão&#10;Frango"></textarea>
             <div class="button-group">
@@ -41,10 +47,27 @@
                     <ul id="unmatchedList"></ul>
                 </div>
             </div>
+            </div>
         </div>
 
-        <div class="supermarket-grid" id="supermarketGrid">
-            <!-- Sectors will be dynamically generated here -->
+        <div id="configPage" class="page-content">
+            <div class="config-section">
+                <h2>⚙️ Configuração do Supermercado</h2>
+                <p>Gerencie os setores e produtos do seu supermercado</p>
+
+                <div class="config-actions">
+                    <button id="addSectorButton" class="action-button">➕ Adicionar Setor</button>
+                    <button id="resetConfigButton" class="action-button danger">🔄 Resetar para Padrão</button>
+                </div>
+
+                <div id="sectorsConfig" class="sectors-config">
+                    <!-- Sectors configuration will be generated here -->
+                </div>
+            </div>
+
+            <div class="supermarket-grid" id="supermarketGrid">
+                <!-- Sectors will be dynamically generated here -->
+            </div>
         </div>
 
         <div class="modal" id="modal">

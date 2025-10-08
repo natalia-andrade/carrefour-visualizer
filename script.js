@@ -1,5 +1,5 @@
-// Supermarket data structure
-const supermarketData = {
+// Default supermarket data structure
+const defaultSupermarketData = {
     1: {
         name: "Hortifruti",
         items: ["Frutas", "Verduras", "Legumes", "Temperos Frescos"]
@@ -537,5 +537,183 @@ document.getElementById('groceryListInput').addEventListener('keydown', (e) => {
     }
 });
 
+// Current supermarket data (loaded from localStorage or default)
+let supermarketData = {};
+
+// Load supermarket configuration
+function loadSupermarketData() {
+    const saved = localStorage.getItem('supermarketConfig');
+    if (saved) {
+        try {
+            supermarketData = JSON.parse(saved);
+        } catch (e) {
+            supermarketData = JSON.parse(JSON.stringify(defaultSupermarketData));
+        }
+    } else {
+        supermarketData = JSON.parse(JSON.stringify(defaultSupermarketData));
+    }
+}
+
+// Save supermarket configuration
+function saveSupermarketData() {
+    localStorage.setItem('supermarketConfig', JSON.stringify(supermarketData));
+    rebuildProductMapping();
+}
+
+// Rebuild product mapping from current supermarket data
+function rebuildProductMapping() {
+    // This will be called after config changes to update the mapping
+    // For now, we'll keep using the static productMapping
+    // In a full implementation, this would dynamically rebuild the mapping
+}
+
+// Tab switching functionality
+function switchTab(tabName) {
+    // Update tab buttons
+    document.querySelectorAll('.tab-button').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+
+    // Update page content
+    document.querySelectorAll('.page-content').forEach(page => {
+        page.classList.remove('active');
+    });
+
+    if (tabName === 'shopping') {
+        document.getElementById('shoppingPage').classList.add('active');
+    } else if (tabName === 'config') {
+        document.getElementById('configPage').classList.add('active');
+        renderConfigPage();
+    }
+}
+
+// Render configuration page
+function renderConfigPage() {
+    const container = document.getElementById('sectorsConfig');
+    container.innerHTML = '';
+
+    Object.keys(supermarketData).sort((a, b) => parseInt(a) - parseInt(b)).forEach(sectorId => {
+        const sector = supermarketData[sectorId];
+        const card = createSectorConfigCard(sectorId, sector);
+        container.appendChild(card);
+    });
+}
+
+// Create sector configuration card
+function createSectorConfigCard(sectorId, sector) {
+    const card = document.createElement('div');
+    card.className = 'sector-config-card';
+    card.style.setProperty('--sector-color', sectorColors[sectorId] || '#667eea');
+
+    const productsHTML = sector.items.map((item, index) => `
+        <div class="product-item">
+            <input type="text" value="${item}" data-sector="${sectorId}" data-index="${index}"
+                onchange="updateProductName(${sectorId}, ${index}, this.value)">
+            <button onclick="deleteProduct(${sectorId}, ${index})">✕</button>
+        </div>
+    `).join('');
+
+    card.innerHTML = `
+        <div class="sector-config-header">
+            <div class="sector-config-title">
+                <span style="color: ${sectorColors[sectorId] || '#667eea'}; font-size: 1.5rem;">●</span>
+                <span style="font-weight: bold; color: #666;">Setor ${sectorId}:</span>
+                <input type="text" value="${sector.name}"
+                    onchange="updateSectorName(${sectorId}, this.value)">
+            </div>
+            <div class="sector-config-actions">
+                <button class="small-button add" onclick="addProduct(${sectorId})">➕ Produto</button>
+                <button class="small-button delete" onclick="deleteSector(${sectorId})">🗑️ Setor</button>
+            </div>
+        </div>
+        <div class="products-list">
+            ${productsHTML}
+        </div>
+    `;
+
+    return card;
+}
+
+// Configuration functions
+function updateSectorName(sectorId, newName) {
+    if (newName.trim()) {
+        supermarketData[sectorId].name = newName.trim();
+        saveSupermarketData();
+    }
+}
+
+function updateProductName(sectorId, index, newName) {
+    if (newName.trim()) {
+        supermarketData[sectorId].items[index] = newName.trim();
+        saveSupermarketData();
+    }
+}
+
+function addProduct(sectorId) {
+    const productName = prompt('Nome do novo produto:');
+    if (productName && productName.trim()) {
+        supermarketData[sectorId].items.push(productName.trim());
+        saveSupermarketData();
+        renderConfigPage();
+    }
+}
+
+function deleteProduct(sectorId, index) {
+    if (confirm('Tem certeza que deseja excluir este produto?')) {
+        supermarketData[sectorId].items.splice(index, 1);
+        saveSupermarketData();
+        renderConfigPage();
+    }
+}
+
+function deleteSector(sectorId) {
+    if (confirm(`Tem certeza que deseja excluir o Setor ${sectorId}?`)) {
+        delete supermarketData[sectorId];
+        saveSupermarketData();
+        renderConfigPage();
+    }
+}
+
+function addNewSector() {
+    const sectorName = prompt('Nome do novo setor:');
+    if (!sectorName || !sectorName.trim()) return;
+
+    // Find next available sector ID
+    const existingIds = Object.keys(supermarketData).map(id => parseInt(id));
+    const newId = Math.max(...existingIds, 0) + 1;
+
+    supermarketData[newId] = {
+        name: sectorName.trim(),
+        items: []
+    };
+
+    saveSupermarketData();
+    renderConfigPage();
+}
+
+function resetToDefault() {
+    if (confirm('Tem certeza que deseja resetar para a configuração padrão? Todas as alterações serão perdidas.')) {
+        supermarketData = JSON.parse(JSON.stringify(defaultSupermarketData));
+        saveSupermarketData();
+        renderConfigPage();
+        alert('Configuração resetada com sucesso!');
+    }
+}
+
+// Event listeners for tabs
+document.querySelectorAll('.tab-button').forEach(button => {
+    button.addEventListener('click', () => {
+        switchTab(button.dataset.tab);
+    });
+});
+
+// Event listeners for config buttons
+document.getElementById('addSectorButton').addEventListener('click', addNewSector);
+document.getElementById('resetConfigButton').addEventListener('click', resetToDefault);
+
 // Initialize on page load
-document.addEventListener('DOMContentLoaded', initSupermarket);
+document.addEventListener('DOMContentLoaded', () => {
+    loadSupermarketData();
+    initSupermarket();
+});
