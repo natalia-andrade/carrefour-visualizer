@@ -616,12 +616,12 @@ function resetAllItems() {
     updateProgress();
 }
 
-// Save checked items to localStorage
+// Save checked items to localStorage (global, not per supermarket)
 function saveCheckedItems() {
     localStorage.setItem('groceryCheckedItems', JSON.stringify([...checkedItems]));
 }
 
-// Load checked items from localStorage
+// Load checked items from localStorage (global, not per supermarket)
 function loadCheckedItems() {
     const saved = localStorage.getItem('groceryCheckedItems');
     if (saved) {
@@ -659,26 +659,74 @@ document.getElementById('groceryListInput').addEventListener('keydown', (e) => {
     }
 });
 
-// Current supermarket data (loaded from localStorage or default)
-let supermarketData = {};
+// Multi-supermarket system
+let supermarkets = {};
+let activeSupermarketId = null;
+let supermarketData = {}; // Current active supermarket sectors
 
-// Load supermarket configuration
+// Load all supermarkets configuration
 function loadSupermarketData() {
-    const saved = localStorage.getItem('supermarketConfig');
+    const saved = localStorage.getItem('supermarkets');
     if (saved) {
         try {
-            supermarketData = JSON.parse(saved);
+            const data = JSON.parse(saved);
+            supermarkets = data.supermarkets || {};
+            activeSupermarketId = data.activeSupermarketId || null;
+
+            // If no supermarkets exist, create default
+            if (Object.keys(supermarkets).length === 0) {
+                createDefaultSupermarket();
+            }
+
+            // Load active supermarket
+            if (activeSupermarketId && supermarkets[activeSupermarketId]) {
+                supermarketData = supermarkets[activeSupermarketId].sectors;
+            } else {
+                // Set first supermarket as active
+                activeSupermarketId = Object.keys(supermarkets)[0];
+                supermarketData = supermarkets[activeSupermarketId].sectors;
+            }
         } catch (e) {
-            supermarketData = JSON.parse(JSON.stringify(defaultSupermarketData));
+            createDefaultSupermarket();
         }
     } else {
-        supermarketData = JSON.parse(JSON.stringify(defaultSupermarketData));
+        createDefaultSupermarket();
     }
 }
 
-// Save supermarket configuration
+// Create default supermarket
+function createDefaultSupermarket() {
+    const defaultId = 'supermarket-' + Date.now();
+    supermarkets = {
+        [defaultId]: {
+            id: defaultId,
+            name: "Supermercado Exemplo",
+            sectors: JSON.parse(JSON.stringify(defaultSupermarketData)),
+            createdAt: new Date().toISOString()
+        }
+    };
+    activeSupermarketId = defaultId;
+    supermarketData = supermarkets[defaultId].sectors;
+    saveAllSupermarkets();
+}
+
+// Save all supermarkets configuration
+function saveAllSupermarkets() {
+    // Update current active supermarket sectors
+    if (activeSupermarketId && supermarkets[activeSupermarketId]) {
+        supermarkets[activeSupermarketId].sectors = supermarketData;
+    }
+
+    const data = {
+        supermarkets: supermarkets,
+        activeSupermarketId: activeSupermarketId
+    };
+    localStorage.setItem('supermarkets', JSON.stringify(data));
+}
+
+// Legacy save function (now uses saveAllSupermarkets)
 function saveSupermarketData() {
-    localStorage.setItem('supermarketConfig', JSON.stringify(supermarketData));
+    saveAllSupermarkets();
     rebuildProductMapping();
 }
 
@@ -715,6 +763,12 @@ function switchTab(tabName) {
 
 // Render map page
 function renderMapPage() {
+    // Update supermarket name in header
+    const nameElement = document.getElementById('mapSupermarketName');
+    if (nameElement && activeSupermarketId && supermarkets[activeSupermarketId]) {
+        nameElement.textContent = supermarkets[activeSupermarketId].name;
+    }
+
     const grid = document.getElementById('supermarketGridMap');
     grid.innerHTML = '';
 
@@ -727,6 +781,12 @@ function renderMapPage() {
 
 // Render configuration page
 function renderConfigPage() {
+    // Update supermarket name in header
+    const nameElement = document.getElementById('configSupermarketName');
+    if (nameElement && activeSupermarketId && supermarkets[activeSupermarketId]) {
+        nameElement.textContent = supermarkets[activeSupermarketId].name;
+    }
+
     const container = document.getElementById('sectorsConfig');
     container.innerHTML = '';
 
@@ -880,12 +940,42 @@ function resetToDefault() {
 
 // Export configuration
 function exportConfiguration() {
-    const config = {
-        version: "1.0",
-        exportDate: new Date().toISOString(),
-        supermarketName: "Minha Configuração",
-        sectors: supermarketData
-    };
+    // Ask user if they want to export single or all supermarkets
+    const exportAll = confirm(
+        'Deseja exportar TODOS os supermercados?\n\n' +
+        'Clique em "OK" para exportar todos os supermercados.\n' +
+        'Clique em "Cancelar" para exportar apenas o supermercado atual.'
+    );
+
+    let config;
+    let filename;
+
+    if (exportAll) {
+        // Export all supermarkets
+        config = {
+            version: "2.0",
+            type: "multi-supermarket",
+            exportDate: new Date().toISOString(),
+            supermarkets: supermarkets
+        };
+        const dateStr = new Date().toISOString().split('T')[0];
+        filename = `todos-supermercados-${dateStr}.json`;
+    } else {
+        // Export only current supermarket
+        const currentMarket = supermarkets[activeSupermarketId];
+        config = {
+            version: "2.0",
+            type: "single-supermarket",
+            exportDate: new Date().toISOString(),
+            supermarket: {
+                name: currentMarket.name,
+                sectors: currentMarket.sectors
+            }
+        };
+        const dateStr = new Date().toISOString().split('T')[0];
+        const safeName = currentMarket.name.toLowerCase().replace(/\s+/g, '-');
+        filename = `${safeName}-${dateStr}.json`;
+    }
 
     const jsonString = JSON.stringify(config, null, 2);
     const blob = new Blob([jsonString], { type: 'application/json' });
@@ -893,8 +983,7 @@ function exportConfiguration() {
 
     const link = document.createElement('a');
     link.href = url;
-    const dateStr = new Date().toISOString().split('T')[0];
-    link.download = `supermercado-config-${dateStr}.json`;
+    link.download = filename;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -918,32 +1007,116 @@ function handleFileImport(event) {
         try {
             const config = JSON.parse(e.target.result);
 
-            // Validate configuration
-            if (!validateConfig(config)) {
-                alert('❌ Arquivo inválido! Verifique se o arquivo está correto.');
-                return;
+            // Detect config type and handle accordingly
+            if (config.type === 'multi-supermarket') {
+                // Import multiple supermarkets
+                if (!validateMultiSupermarketConfig(config)) {
+                    alert('❌ Arquivo inválido! Verifique se o arquivo está correto.');
+                    return;
+                }
+
+                const message = `Importar configuração de múltiplos supermercados?\n\n` +
+                    `Data: ${new Date(config.exportDate).toLocaleString()}\n` +
+                    `Supermercados: ${Object.keys(config.supermarkets).length}\n\n` +
+                    `Atenção: Isso substituirá TODOS os seus supermercados!`;
+
+                if (!confirm(message)) {
+                    return;
+                }
+
+                // Backup current config
+                localStorage.setItem('supermarketsBackup', JSON.stringify({ supermarkets, activeSupermarketId }));
+
+                // Import all supermarkets
+                supermarkets = config.supermarkets;
+                activeSupermarketId = Object.keys(supermarkets)[0];
+                supermarketData = supermarkets[activeSupermarketId].sectors;
+
+                saveAllSupermarkets();
+                populateSupermarketDropdown();
+                renderConfigPage();
+                renderMapPage();
+
+                alert('✅ Múltiplos supermercados importados com sucesso!');
+
+            } else if (config.type === 'single-supermarket') {
+                // Import single supermarket
+                if (!validateSingleSupermarketConfig(config)) {
+                    alert('❌ Arquivo inválido! Verifique se o arquivo está correto.');
+                    return;
+                }
+
+                const importAs = prompt(
+                    `Importar supermercado: "${config.supermarket.name}"\n\n` +
+                    `Como você deseja importar?\n` +
+                    `1. Digite "novo" para criar um novo supermercado\n` +
+                    `2. Digite "substituir" para substituir o supermercado atual\n` +
+                    `3. Clique em "Cancelar" para cancelar`,
+                    'novo'
+                );
+
+                if (!importAs) {
+                    return;
+                }
+
+                if (importAs.toLowerCase() === 'novo') {
+                    // Create new supermarket from import
+                    const newId = 'supermarket-' + Date.now();
+                    supermarkets[newId] = {
+                        id: newId,
+                        name: config.supermarket.name,
+                        sectors: config.supermarket.sectors,
+                        createdAt: new Date().toISOString()
+                    };
+
+                    switchSupermarket(newId);
+                    alert(`✅ Novo supermercado "${config.supermarket.name}" importado com sucesso!`);
+
+                } else if (importAs.toLowerCase() === 'substituir') {
+                    // Replace current supermarket
+                    if (!confirm(`Substituir o supermercado "${supermarkets[activeSupermarketId].name}" com "${config.supermarket.name}"?`)) {
+                        return;
+                    }
+
+                    supermarkets[activeSupermarketId].name = config.supermarket.name;
+                    supermarkets[activeSupermarketId].sectors = config.supermarket.sectors;
+                    supermarketData = config.supermarket.sectors;
+
+                    saveAllSupermarkets();
+                    populateSupermarketDropdown();
+                    renderConfigPage();
+                    renderMapPage();
+
+                    alert('✅ Supermercado substituído com sucesso!');
+                }
+
+            } else {
+                // Legacy format (version 1.0) - treat as single supermarket sectors
+                if (!validateLegacyConfig(config)) {
+                    alert('❌ Arquivo inválido! Verifique se o arquivo está correto.');
+                    return;
+                }
+
+                const message = `Importar configuração (formato antigo)?\n\n` +
+                    `Data: ${new Date(config.exportDate).toLocaleString()}\n` +
+                    `Setores: ${Object.keys(config.sectors).length}\n\n` +
+                    `Atenção: Isso substituirá o supermercado atual!`;
+
+                if (!confirm(message)) {
+                    return;
+                }
+
+                // Import as current supermarket sectors
+                supermarketData = config.sectors;
+                supermarkets[activeSupermarketId].sectors = config.sectors;
+
+                saveSupermarketData();
+                renderConfigPage();
+                renderMapPage();
+
+                alert('✅ Configuração importada com sucesso!');
             }
 
-            // Confirm import
-            const message = `Importar configuração?\n\n` +
-                `Data: ${new Date(config.exportDate).toLocaleString()}\n` +
-                `Setores: ${Object.keys(config.sectors).length}\n\n` +
-                `Atenção: Isso substituirá sua configuração atual!`;
-
-            if (!confirm(message)) {
-                return;
-            }
-
-            // Backup current config (for potential undo)
-            localStorage.setItem('supermarketConfigBackup', JSON.stringify(supermarketData));
-
-            // Import new config
-            supermarketData = config.sectors;
-            saveSupermarketData();
-            renderConfigPage();
-            renderMapPage(); // Update map if visible
-
-            alert('✅ Configuração importada com sucesso!');
         } catch (error) {
             alert('❌ Erro ao ler o arquivo: ' + error.message);
         }
@@ -959,15 +1132,46 @@ function handleFileImport(event) {
     event.target.value = '';
 }
 
-// Validate imported configuration
-function validateConfig(config) {
+// Validate multi-supermarket configuration
+function validateMultiSupermarketConfig(config) {
+    if (!config || typeof config !== 'object') return false;
+    if (config.type !== 'multi-supermarket') return false;
+    if (!config.supermarkets || typeof config.supermarkets !== 'object') return false;
+
+    // Validate each supermarket
+    for (const marketId in config.supermarkets) {
+        const market = config.supermarkets[marketId];
+        if (!market.id || !market.name || !market.sectors) return false;
+        if (!validateSectorsStructure(market.sectors)) return false;
+    }
+
+    return true;
+}
+
+// Validate single-supermarket configuration
+function validateSingleSupermarketConfig(config) {
+    if (!config || typeof config !== 'object') return false;
+    if (config.type !== 'single-supermarket') return false;
+    if (!config.supermarket || typeof config.supermarket !== 'object') return false;
+    if (!config.supermarket.name || !config.supermarket.sectors) return false;
+
+    return validateSectorsStructure(config.supermarket.sectors);
+}
+
+// Validate legacy configuration (version 1.0)
+function validateLegacyConfig(config) {
     if (!config || typeof config !== 'object') return false;
     if (!config.version || !config.sectors) return false;
-    if (typeof config.sectors !== 'object') return false;
 
-    // Validate sector structure
-    for (const sectorId in config.sectors) {
-        const sector = config.sectors[sectorId];
+    return validateSectorsStructure(config.sectors);
+}
+
+// Validate sectors structure
+function validateSectorsStructure(sectors) {
+    if (typeof sectors !== 'object') return false;
+
+    for (const sectorId in sectors) {
+        const sector = sectors[sectorId];
         if (!sector.name || !Array.isArray(sector.items)) return false;
     }
 
@@ -981,15 +1185,138 @@ document.querySelectorAll('.tab-button').forEach(button => {
     });
 });
 
+// Edit/Rename current supermarket
+function renameSupermarket() {
+    const currentMarket = supermarkets[activeSupermarketId];
+    const newName = prompt(`Renomear supermercado "${currentMarket.name}":`, currentMarket.name);
+
+    if (!newName || !newName.trim()) {
+        return;
+    }
+
+    if (newName.trim() === currentMarket.name) {
+        return;
+    }
+
+    currentMarket.name = newName.trim();
+    saveAllSupermarkets();
+    populateSupermarketDropdown();
+
+    alert(`✅ Supermercado renomeado para "${newName.trim()}"!`);
+}
+
+// Delete current supermarket
+function deleteSupermarket() {
+    const currentMarket = supermarkets[activeSupermarketId];
+
+    // Check if there's only one supermarket
+    if (Object.keys(supermarkets).length === 1) {
+        alert('❌ Não é possível excluir o último supermercado!');
+        return;
+    }
+
+    if (!confirm(`Tem certeza que deseja excluir o supermercado "${currentMarket.name}"?\n\nEsta ação não pode ser desfeita!`)) {
+        return;
+    }
+
+    // Delete supermarket
+    delete supermarkets[activeSupermarketId];
+
+    // Switch to first available supermarket
+    activeSupermarketId = Object.keys(supermarkets)[0];
+    supermarketData = supermarkets[activeSupermarketId].sectors;
+
+    saveAllSupermarkets();
+    populateSupermarketDropdown();
+    renderConfigPage();
+    renderMapPage();
+
+    alert(`✅ Supermercado "${currentMarket.name}" excluído com sucesso!`);
+}
+
 // Event listeners for config buttons
 document.getElementById('addSectorButton').addEventListener('click', addNewSector);
 document.getElementById('resetConfigButton').addEventListener('click', resetToDefault);
+document.getElementById('editSupermarketButton').addEventListener('click', renameSupermarket);
+document.getElementById('deleteSupermarketButton').addEventListener('click', deleteSupermarket);
 document.getElementById('exportConfigButton').addEventListener('click', exportConfiguration);
 document.getElementById('importConfigButton').addEventListener('click', importConfiguration);
 document.getElementById('importFileInput').addEventListener('change', handleFileImport);
 
+// Populate supermarket dropdown
+function populateSupermarketDropdown() {
+    const dropdown = document.getElementById('supermarketDropdown');
+    dropdown.innerHTML = '';
+
+    Object.values(supermarkets).forEach(market => {
+        const option = document.createElement('option');
+        option.value = market.id;
+        option.textContent = market.name;
+        option.selected = market.id === activeSupermarketId;
+        dropdown.appendChild(option);
+    });
+}
+
+// Switch to a different supermarket
+function switchSupermarket(supermarketId) {
+    if (!supermarkets[supermarketId]) {
+        console.error('Supermarket not found:', supermarketId);
+        return;
+    }
+
+    // Save current supermarket data before switching
+    if (activeSupermarketId && supermarkets[activeSupermarketId]) {
+        supermarkets[activeSupermarketId].sectors = supermarketData;
+    }
+
+    // Switch to new supermarket
+    activeSupermarketId = supermarketId;
+    supermarketData = supermarkets[supermarketId].sectors;
+
+    // Save changes
+    saveAllSupermarkets();
+
+    // Update UI
+    populateSupermarketDropdown();
+    renderMapPage();
+    renderConfigPage();
+
+    // Show confirmation
+    console.log('Switched to:', supermarkets[supermarketId].name);
+}
+
+// Create new supermarket
+function createNewSupermarket() {
+    const name = prompt('Nome do novo supermercado:');
+    if (!name || !name.trim()) {
+        return;
+    }
+
+    const newId = 'supermarket-' + Date.now();
+    supermarkets[newId] = {
+        id: newId,
+        name: name.trim(),
+        sectors: {},
+        createdAt: new Date().toISOString()
+    };
+
+    // Switch to the new supermarket
+    switchSupermarket(newId);
+
+    alert(`✅ Supermercado "${name.trim()}" criado com sucesso!`);
+}
+
+// Event listener for supermarket dropdown
+document.getElementById('supermarketDropdown').addEventListener('change', (e) => {
+    switchSupermarket(e.target.value);
+});
+
+// Event listener for new supermarket button
+document.getElementById('newSupermarketButton').addEventListener('click', createNewSupermarket);
+
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', () => {
     loadSupermarketData();
+    populateSupermarketDropdown();
     initSupermarket();
 });

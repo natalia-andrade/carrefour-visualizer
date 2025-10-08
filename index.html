@@ -13,6 +13,10 @@
         <header>
             <h1>🛒 Mapa do Supermercado</h1>
             <p>Sistema de gerenciamento de compras</p>
+            <div class="supermarket-selector">
+                <select id="supermarketDropdown" class="supermarket-dropdown"></select>
+                <button id="newSupermarketButton" class="new-supermarket-button">➕ Novo</button>
+            </div>
         </header>
 
         <nav class="tab-navigation">
@@ -56,11 +60,13 @@
         <div id="configPage" class="page-content">
             <div class="config-section">
                 <h2>⚙️ Configuração do Supermercado</h2>
-                <p>Gerencie os setores e produtos do seu supermercado</p>
+                <p>Gerencie os setores e produtos do <strong id="configSupermarketName"></strong></p>
 
                 <div class="config-actions">
                     <button id="addSectorButton" class="action-button">➕ Adicionar Setor</button>
                     <button id="resetConfigButton" class="action-button danger">🔄 Resetar para Padrão</button>
+                    <button id="editSupermarketButton" class="action-button edit">✏️ Renomear Supermercado</button>
+                    <button id="deleteSupermarketButton" class="action-button delete">🗑️ Excluir Supermercado</button>
                     <button id="exportConfigButton" class="action-button export">📤 Exportar Config</button>
                     <button id="importConfigButton" class="action-button import">📥 Importar Config</button>
                 </div>
@@ -75,7 +81,7 @@
         <div id="mapPage" class="page-content">
             <div class="map-section">
                 <h2>🗺️ Mapa do Mercado</h2>
-                <p>Visualização geral dos setores do supermercado</p>
+                <p>Visualização geral dos setores do <strong id="mapSupermarketName"></strong></p>
             </div>
 
             <div class="supermarket-grid" id="supermarketGridMap">

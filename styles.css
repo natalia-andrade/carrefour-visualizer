@@ -35,6 +35,63 @@ header p {
     opacity: 0.9;
 }
 
+/* Supermarket Selector */
+.supermarket-selector {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+    flex-wrap: wrap;
+}
+
+.supermarket-dropdown {
+    background: white;
+    color: #333;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    padding: 12px 20px;
+    font-size: 1rem;
+    font-weight: 600;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 200px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.supermarket-dropdown:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+}
+
+.supermarket-dropdown:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+}
+
+.new-supermarket-button {
+    background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    font-size: 1rem;
+    font-weight: bold;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 10px rgba(76, 175, 80, 0.3);
+}
+
+.new-supermarket-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(76, 175, 80, 0.4);
+}
+
+.new-supermarket-button:active {
+    transform: translateY(0);
+}
+
 /* Tab Navigation */
 .tab-navigation {
     display: flex;
@@ -756,6 +813,24 @@ header p {
 
 .action-button.import:hover {
     box-shadow: 0 5px 12px rgba(156, 39, 176, 0.4);
+}
+
+.action-button.edit {
+    background: linear-gradient(135deg, #607D8B 0%, #455A64 100%);
+    box-shadow: 0 3px 8px rgba(96, 125, 139, 0.3);
+}
+
+.action-button.edit:hover {
+    box-shadow: 0 5px 12px rgba(96, 125, 139, 0.4);
+}
+
+.action-button.delete {
+    background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
+    box-shadow: 0 3px 8px rgba(244, 67, 54, 0.3);
+}
+
+.action-button.delete:hover {
+    box-shadow: 0 5px 12px rgba(244, 67, 54, 0.4);
 }
 
 .sectors-config {
