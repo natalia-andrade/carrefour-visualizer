@@ -985,20 +985,42 @@ header p {
         font-size: 1.4rem;
     }
 
-    /* Aisle layout becomes single column */
+    /* Aisle layout - simplified for mobile */
     .aisle-container {
-        grid-template-columns: 1fr;
-        gap: 15px;
+        grid-template-columns: 1fr 30px 1fr;
+        gap: 0;
     }
 
     .aisle-corridor {
-        display: none;
+        display: flex;
+        background: linear-gradient(180deg,
+            rgba(200, 200, 200, 0.2) 0%,
+            rgba(180, 180, 180, 0.3) 50%,
+            rgba(200, 200, 200, 0.2) 100%);
+        border-left: 2px dashed rgba(0, 0, 0, 0.08);
+        border-right: 2px dashed rgba(0, 0, 0, 0.08);
+    }
+
+    .aisle-corridor::before {
+        width: 1px;
+        background: repeating-linear-gradient(
+            to bottom,
+            rgba(0, 0, 0, 0.08),
+            rgba(0, 0, 0, 0.08) 15px,
+            transparent 15px,
+            transparent 30px
+        );
+    }
+
+    .aisle-label {
+        font-size: 0.7rem;
+        letter-spacing: 3px;
     }
 
     .aisle-left,
     .aisle-right {
-        padding: 0;
-        gap: 15px;
+        padding: 5px;
+        gap: 12px;
     }
 
     .entrance-marker,
