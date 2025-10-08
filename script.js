@@ -511,8 +511,21 @@ function loadCheckedItems() {
     }
 }
 
+// Clear grocery list input
+function clearGroceryList() {
+    const input = document.getElementById('groceryListInput');
+    if (input.value.trim() && !confirm('Tem certeza que deseja limpar a lista?')) {
+        return;
+    }
+    input.value = '';
+    input.focus();
+}
+
 // Event listener for analyze button
 document.getElementById('analyzeButton').addEventListener('click', analyzeGroceryList);
+
+// Event listener for clear button
+document.getElementById('clearButton').addEventListener('click', clearGroceryList);
 
 // Event listener for reset button
 document.getElementById('resetButton').addEventListener('click', resetAllItems);
