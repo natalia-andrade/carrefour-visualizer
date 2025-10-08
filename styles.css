@@ -740,6 +740,24 @@ header p {
     box-shadow: 0 5px 12px rgba(255, 152, 0, 0.4);
 }
 
+.action-button.export {
+    background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+    box-shadow: 0 3px 8px rgba(33, 150, 243, 0.3);
+}
+
+.action-button.export:hover {
+    box-shadow: 0 5px 12px rgba(33, 150, 243, 0.4);
+}
+
+.action-button.import {
+    background: linear-gradient(135deg, #9C27B0 0%, #7B1FA2 100%);
+    box-shadow: 0 3px 8px rgba(156, 39, 176, 0.3);
+}
+
+.action-button.import:hover {
+    box-shadow: 0 5px 12px rgba(156, 39, 176, 0.4);
+}
+
 .sectors-config {
     display: flex;
     flex-direction: column;

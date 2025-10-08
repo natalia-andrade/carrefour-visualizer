@@ -878,6 +878,102 @@ function resetToDefault() {
     }
 }
 
+// Export configuration
+function exportConfiguration() {
+    const config = {
+        version: "1.0",
+        exportDate: new Date().toISOString(),
+        supermarketName: "Minha Configuração",
+        sectors: supermarketData
+    };
+
+    const jsonString = JSON.stringify(config, null, 2);
+    const blob = new Blob([jsonString], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement('a');
+    link.href = url;
+    const dateStr = new Date().toISOString().split('T')[0];
+    link.download = `supermercado-config-${dateStr}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
+    alert('✅ Configuração exportada com sucesso!');
+}
+
+// Import configuration
+function importConfiguration() {
+    document.getElementById('importFileInput').click();
+}
+
+// Handle file selection
+function handleFileImport(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const config = JSON.parse(e.target.result);
+
+            // Validate configuration
+            if (!validateConfig(config)) {
+                alert('❌ Arquivo inválido! Verifique se o arquivo está correto.');
+                return;
+            }
+
+            // Confirm import
+            const message = `Importar configuração?\n\n` +
+                `Data: ${new Date(config.exportDate).toLocaleString()}\n` +
+                `Setores: ${Object.keys(config.sectors).length}\n\n` +
+                `Atenção: Isso substituirá sua configuração atual!`;
+
+            if (!confirm(message)) {
+                return;
+            }
+
+            // Backup current config (for potential undo)
+            localStorage.setItem('supermarketConfigBackup', JSON.stringify(supermarketData));
+
+            // Import new config
+            supermarketData = config.sectors;
+            saveSupermarketData();
+            renderConfigPage();
+            renderMapPage(); // Update map if visible
+
+            alert('✅ Configuração importada com sucesso!');
+        } catch (error) {
+            alert('❌ Erro ao ler o arquivo: ' + error.message);
+        }
+    };
+
+    reader.onerror = function() {
+        alert('❌ Erro ao ler o arquivo!');
+    };
+
+    reader.readAsText(file);
+
+    // Reset file input
+    event.target.value = '';
+}
+
+// Validate imported configuration
+function validateConfig(config) {
+    if (!config || typeof config !== 'object') return false;
+    if (!config.version || !config.sectors) return false;
+    if (typeof config.sectors !== 'object') return false;
+
+    // Validate sector structure
+    for (const sectorId in config.sectors) {
+        const sector = config.sectors[sectorId];
+        if (!sector.name || !Array.isArray(sector.items)) return false;
+    }
+
+    return true;
+}
+
 // Event listeners for tabs
 document.querySelectorAll('.tab-button').forEach(button => {
     button.addEventListener('click', () => {
@@ -888,6 +984,9 @@ document.querySelectorAll('.tab-button').forEach(button => {
 // Event listeners for config buttons
 document.getElementById('addSectorButton').addEventListener('click', addNewSector);
 document.getElementById('resetConfigButton').addEventListener('click', resetToDefault);
+document.getElementById('exportConfigButton').addEventListener('click', exportConfiguration);
+document.getElementById('importConfigButton').addEventListener('click', importConfiguration);
+document.getElementById('importFileInput').addEventListener('change', handleFileImport);
 
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', () => {
