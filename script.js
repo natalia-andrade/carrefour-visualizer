@@ -282,6 +282,10 @@ function analyzeGroceryList() {
     displayResults(sectorsFound, unmatchedItems);
 }
 
+// Global state for checked items
+let checkedItems = new Set();
+let allItems = [];
+
 // Display analysis results
 function displayResults(sectorsFound, unmatchedItems) {
     const resultsSection = document.getElementById('resultsSection');
@@ -292,6 +296,10 @@ function displayResults(sectorsFound, unmatchedItems) {
     // Clear previous results
     sectorsContainer.innerHTML = '';
     unmatchedList.innerHTML = '';
+    allItems = [];
+
+    // Load saved checked items from localStorage
+    loadCheckedItems();
 
     // Sort sectors by ID
     const sortedSectors = Object.keys(sectorsFound).sort((a, b) => a - b);
@@ -310,18 +318,33 @@ function displayResults(sectorsFound, unmatchedItems) {
         const sector = sectorsFound[sectorId];
         const card = document.createElement('div');
         card.className = 'result-sector-card';
+        card.dataset.sectorId = sectorId;
         card.style.setProperty('--sector-color', sectorColors[sectorId]);
         card.style.setProperty('--sector-color-dark', adjustBrightness(sectorColors[sectorId], -20));
 
-        const itemsList = sector.items.map(item => `<li>${item}</li>`).join('');
+        const itemsListHtml = sector.items.map((item, index) => {
+            const itemId = `sector-${sectorId}-item-${index}`;
+            allItems.push(itemId);
+            const isChecked = checkedItems.has(itemId);
+            return `<li data-item-id="${itemId}" class="${isChecked ? 'checked' : ''}">${item}</li>`;
+        }).join('');
 
         card.innerHTML = `
             <div class="result-sector-number">Setor ${sectorId}</div>
             <div class="result-sector-name">${sector.name}</div>
-            <ul class="result-sector-items">${itemsList}</ul>
+            <ul class="result-sector-items">${itemsListHtml}</ul>
         `;
 
         sectorsContainer.appendChild(card);
+
+        // Add click listeners to items
+        const itemElements = card.querySelectorAll('.result-sector-items li');
+        itemElements.forEach(itemEl => {
+            itemEl.addEventListener('click', () => toggleItem(itemEl, card));
+        });
+
+        // Check if sector is completed
+        updateSectorCompletion(card);
     });
 
     // Display unmatched items
@@ -335,6 +358,9 @@ function displayResults(sectorsFound, unmatchedItems) {
     } else {
         unmatchedSection.classList.add('hidden');
     }
+
+    // Update progress
+    updateProgress();
 
     // Scroll to results
     resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -353,8 +379,114 @@ function adjustBrightness(color, percent) {
         .toString(16).slice(1);
 }
 
+// Toggle item checked state
+function toggleItem(itemElement, sectorCard) {
+    const itemId = itemElement.dataset.itemId;
+
+    if (checkedItems.has(itemId)) {
+        checkedItems.delete(itemId);
+        itemElement.classList.remove('checked');
+    } else {
+        checkedItems.add(itemId);
+        itemElement.classList.add('checked');
+    }
+
+    // Save to localStorage
+    saveCheckedItems();
+
+    // Update sector completion
+    updateSectorCompletion(sectorCard);
+
+    // Update progress
+    updateProgress();
+}
+
+// Update sector completion status
+function updateSectorCompletion(sectorCard) {
+    const items = sectorCard.querySelectorAll('.result-sector-items li');
+    const checkedCount = sectorCard.querySelectorAll('.result-sector-items li.checked').length;
+
+    if (items.length > 0 && checkedCount === items.length) {
+        sectorCard.classList.add('completed');
+    } else {
+        sectorCard.classList.remove('completed');
+    }
+}
+
+// Update progress bar and text
+function updateProgress() {
+    const totalItems = allItems.length;
+    const checkedCount = checkedItems.size;
+    const percentage = totalItems > 0 ? Math.round((checkedCount / totalItems) * 100) : 0;
+
+    const progressText = document.getElementById('progressText');
+    const progressPercentage = document.getElementById('progressPercentage');
+    const progressFill = document.getElementById('progressFill');
+
+    progressText.textContent = `${checkedCount} de ${totalItems} itens coletados`;
+    progressPercentage.textContent = `${percentage}%`;
+    progressFill.style.width = `${percentage}%`;
+
+    if (percentage === 100 && totalItems > 0) {
+        progressFill.classList.add('complete');
+        // Show celebration message
+        setTimeout(() => {
+            if (checkedItems.size === totalItems) {
+                alert('🎉 Parabéns! Você coletou todos os itens da sua lista!');
+            }
+        }, 500);
+    } else {
+        progressFill.classList.remove('complete');
+    }
+}
+
+// Reset all checked items
+function resetAllItems() {
+    if (checkedItems.size === 0) {
+        return;
+    }
+
+    if (!confirm('Tem certeza que deseja desmarcar todos os itens?')) {
+        return;
+    }
+
+    checkedItems.clear();
+    saveCheckedItems();
+
+    // Update UI
+    document.querySelectorAll('.result-sector-items li').forEach(item => {
+        item.classList.remove('checked');
+    });
+
+    document.querySelectorAll('.result-sector-card').forEach(card => {
+        card.classList.remove('completed');
+    });
+
+    updateProgress();
+}
+
+// Save checked items to localStorage
+function saveCheckedItems() {
+    localStorage.setItem('groceryCheckedItems', JSON.stringify([...checkedItems]));
+}
+
+// Load checked items from localStorage
+function loadCheckedItems() {
+    const saved = localStorage.getItem('groceryCheckedItems');
+    if (saved) {
+        try {
+            checkedItems = new Set(JSON.parse(saved));
+        } catch (e) {
+            checkedItems = new Set();
+        }
+    }
+}
+
 // Event listener for analyze button
 document.getElementById('analyzeButton').addEventListener('click', analyzeGroceryList);
+
+// Event listener for reset button
+document.getElementById('resetButton').addEventListener('click', resetAllItems);
 
 // Allow Enter key to trigger analysis (Ctrl+Enter in textarea)
 document.getElementById('groceryListInput').addEventListener('keydown', (e) => {

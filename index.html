@@ -19,7 +19,19 @@
             <button id="analyzeButton">Analisar Lista</button>
 
             <div id="resultsSection" class="results-section hidden">
-                <h3>Setores que você deve visitar:</h3>
+                <div class="progress-container">
+                    <div class="progress-header">
+                        <h3>Setores que você deve visitar:</h3>
+                        <button id="resetButton" class="reset-button">Resetar Tudo</button>
+                    </div>
+                    <div class="progress-info">
+                        <span id="progressText">0 de 0 itens coletados</span>
+                        <span id="progressPercentage">0%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div id="progressFill" class="progress-fill"></div>
+                    </div>
+                </div>
                 <div id="sectorsToVisit"></div>
                 <div id="unmatchedItems" class="unmatched-items hidden">
                     <h4>Itens não encontrados:</h4>
