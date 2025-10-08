@@ -451,7 +451,6 @@ function displayResults(sectorsFound, unmatchedItems) {
                     </div>
                     <div class="aisle-right"></div>
                 </div>
-                <div class="checkout-marker">CAIXA / SAÍDA</div>
             </div>
         `;
 
@@ -782,10 +781,42 @@ function renderMapPage() {
     const grid = document.getElementById('supermarketGridMap');
     grid.innerHTML = '';
 
+    // Create aisle layout structure like in shopping list
+    const layoutHTML = `
+        <div class="supermarket-layout">
+            <div class="entrance-marker">ENTRADA</div>
+            <div class="aisle-container">
+                <div class="aisle-left"></div>
+                <div class="aisle-corridor">
+                    <div class="aisle-label">Corredor</div>
+                </div>
+                <div class="aisle-right"></div>
+            </div>
+        </div>
+    `;
+
+    grid.innerHTML = layoutHTML;
+
+    const aisleLeft = grid.querySelector('.aisle-left');
+    const aisleRight = grid.querySelector('.aisle-right');
+
+    // Sort sectors and display in aisle layout
+    // Odd sectors (1, 3, 5, 7, 9, 11, 13, 15) on LEFT
+    // Even sectors (2, 4, 6, 8, 10, 12, 14) on RIGHT
     Object.keys(supermarketData).sort((a, b) => parseInt(a) - parseInt(b)).forEach(sectorNumber => {
         const sector = supermarketData[sectorNumber];
         const card = createSectorCard(sectorNumber, sector);
-        grid.appendChild(card);
+        const isLeft = parseInt(sectorNumber) % 2 === 1;
+
+        // Add left/right class for positioning
+        card.classList.add(isLeft ? 'left' : 'right');
+
+        // Append to appropriate side
+        if (isLeft) {
+            aisleLeft.appendChild(card);
+        } else {
+            aisleRight.appendChild(card);
+        }
     });
 }
 
