@@ -921,6 +921,35 @@ header p {
     border-radius: 8px;
 }
 
+/* Drag insertion indicator */
+.draggable-sector.drag-insert-before::before {
+    content: '';
+    position: absolute;
+    top: -5px;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: #667eea;
+    border-radius: 2px;
+    box-shadow: 0 0 5px rgba(102, 126, 234, 0.5);
+}
+
+.draggable-sector.drag-insert-after::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: #667eea;
+    border-radius: 2px;
+    box-shadow: 0 0 5px rgba(102, 126, 234, 0.5);
+}
+
+.draggable-sector {
+    position: relative;
+}
+
 .config-actions {
     display: flex;
     gap: 15px;

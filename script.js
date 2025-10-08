@@ -822,19 +822,47 @@ function renderTwoColumnLayout(container, sectorsData, sortedSectors, cardCreato
     const currentMarket = supermarkets[activeSupermarketId];
     const sectorPositions = currentMarket?.sectorPositions || {};
 
-    // Use saved positions or default to odd/even
+    // Organize sectors by column and order
+    const leftSectors = [];
+    const rightSectors = [];
+
     sortedSectors.forEach(sectorNumber => {
         const sector = sectorsData[sectorNumber];
-        const card = cardCreatorFn(sectorNumber, sector);
-        const position = sectorPositions[sectorNumber] || (parseInt(sectorNumber) % 2 === 1 ? 'left' : 'right');
+        let position = sectorPositions[sectorNumber];
 
-        card.classList.add(position);
-
-        if (position === 'left') {
-            aisleLeft.appendChild(card);
-        } else {
-            aisleRight.appendChild(card);
+        // Handle old format or missing data
+        if (typeof position === 'string') {
+            position = { column: position, order: parseInt(sectorNumber) };
+        } else if (!position) {
+            position = {
+                column: parseInt(sectorNumber) % 2 === 1 ? 'left' : 'right',
+                order: parseInt(sectorNumber)
+            };
         }
+
+        if (position.column === 'left') {
+            leftSectors.push({ id: sectorNumber, sector, order: position.order });
+        } else {
+            rightSectors.push({ id: sectorNumber, sector, order: position.order });
+        }
+    });
+
+    // Sort by order
+    leftSectors.sort((a, b) => a.order - b.order);
+    rightSectors.sort((a, b) => a.order - b.order);
+
+    // Render left column
+    leftSectors.forEach(({ id, sector }) => {
+        const card = cardCreatorFn(id, sector);
+        card.classList.add('left');
+        aisleLeft.appendChild(card);
+    });
+
+    // Render right column
+    rightSectors.forEach(({ id, sector }) => {
+        const card = cardCreatorFn(id, sector);
+        card.classList.add('right');
+        aisleRight.appendChild(card);
     });
 }
 
@@ -877,18 +905,51 @@ function renderLayoutEditor() {
         currentMarket.sectorPositions = {};
     }
 
-    // Render sectors in their positions
-    Object.keys(supermarketData).sort((a, b) => parseInt(a) - parseInt(b)).forEach(sectorId => {
+    // Organize sectors by column and order
+    const leftSectors = [];
+    const rightSectors = [];
+
+    Object.keys(supermarketData).forEach(sectorId => {
         const sector = supermarketData[sectorId];
-        const position = currentMarket.sectorPositions[sectorId] || (parseInt(sectorId) % 2 === 1 ? 'left' : 'right');
+        let position = currentMarket.sectorPositions[sectorId];
 
-        const sectorCard = createDraggableSector(sectorId, sector);
-
-        if (position === 'left') {
-            leftZone.appendChild(sectorCard);
-        } else {
-            rightZone.appendChild(sectorCard);
+        // Handle old format (string) or new format (object)
+        if (typeof position === 'string') {
+            // Migrate from old format
+            position = {
+                column: position,
+                order: parseInt(sectorId)
+            };
+            currentMarket.sectorPositions[sectorId] = position;
+        } else if (!position) {
+            // Default position
+            position = {
+                column: parseInt(sectorId) % 2 === 1 ? 'left' : 'right',
+                order: parseInt(sectorId)
+            };
+            currentMarket.sectorPositions[sectorId] = position;
         }
+
+        if (position.column === 'left') {
+            leftSectors.push({ id: sectorId, sector, order: position.order });
+        } else {
+            rightSectors.push({ id: sectorId, sector, order: position.order });
+        }
+    });
+
+    // Sort by order
+    leftSectors.sort((a, b) => a.order - b.order);
+    rightSectors.sort((a, b) => a.order - b.order);
+
+    // Render sectors
+    leftSectors.forEach(({ id, sector }) => {
+        const sectorCard = createDraggableSector(id, sector);
+        leftZone.appendChild(sectorCard);
+    });
+
+    rightSectors.forEach(({ id, sector }) => {
+        const sectorCard = createDraggableSector(id, sector);
+        rightZone.appendChild(sectorCard);
     });
 
     // Setup drop zones
@@ -912,6 +973,8 @@ function createDraggableSector(sectorId, sector) {
     // Drag events
     card.addEventListener('dragstart', handleDragStart);
     card.addEventListener('dragend', handleDragEnd);
+    card.addEventListener('dragover', handleDragOverCard);
+    card.addEventListener('drop', handleDropOnCard);
 
     return card;
 }
@@ -949,6 +1012,36 @@ function handleDragLeave(e) {
     e.currentTarget.classList.remove('drag-over');
 }
 
+// Handle drag over another card
+function handleDragOverCard(e) {
+    if (e.preventDefault) {
+        e.preventDefault();
+    }
+    e.stopPropagation();
+
+    const afterElement = getDragAfterElement(e.currentTarget.parentElement, e.clientY);
+    if (afterElement == null) {
+        e.currentTarget.parentElement.appendChild(draggedElement);
+    } else {
+        e.currentTarget.parentElement.insertBefore(draggedElement, afterElement);
+    }
+
+    return false;
+}
+
+// Handle drop on another card
+function handleDropOnCard(e) {
+    if (e.stopPropagation) {
+        e.stopPropagation();
+    }
+    e.preventDefault();
+
+    // Recalculate orders after drop
+    recalculateOrders();
+
+    return false;
+}
+
 function handleDrop(e, column) {
     if (e.stopPropagation) {
         e.stopPropagation();
@@ -965,19 +1058,66 @@ function handleDrop(e, column) {
         if (!currentMarket.sectorPositions) {
             currentMarket.sectorPositions = {};
         }
-        currentMarket.sectorPositions[sectorId] = column;
 
-        // Move the element
+        // Append to the end if dropped in empty zone
         e.currentTarget.appendChild(draggedElement);
 
-        // Save changes
-        saveAllSupermarkets();
-
-        // Update map and shopping list views
-        renderMapPage();
+        // Recalculate all orders in both columns
+        recalculateOrders();
     }
 
     return false;
+}
+
+// Get element after which to insert dragged element
+function getDragAfterElement(container, y) {
+    const draggableElements = [...container.querySelectorAll('.draggable-sector:not(.dragging)')];
+
+    return draggableElements.reduce((closest, child) => {
+        const box = child.getBoundingClientRect();
+        const offset = y - box.top - box.height / 2;
+
+        if (offset < 0 && offset > closest.offset) {
+            return { offset: offset, element: child };
+        } else {
+            return closest;
+        }
+    }, { offset: Number.NEGATIVE_INFINITY }).element;
+}
+
+// Recalculate order values for all sectors
+function recalculateOrders() {
+    const currentMarket = supermarkets[activeSupermarketId];
+    if (!currentMarket) return;
+
+    const leftZone = document.querySelector('#layoutLeft .sector-drop-zone');
+    const rightZone = document.querySelector('#layoutRight .sector-drop-zone');
+
+    // Recalculate left column
+    const leftCards = leftZone.querySelectorAll('.draggable-sector');
+    leftCards.forEach((card, index) => {
+        const sectorId = card.dataset.sectorId;
+        currentMarket.sectorPositions[sectorId] = {
+            column: 'left',
+            order: index
+        };
+    });
+
+    // Recalculate right column
+    const rightCards = rightZone.querySelectorAll('.draggable-sector');
+    rightCards.forEach((card, index) => {
+        const sectorId = card.dataset.sectorId;
+        currentMarket.sectorPositions[sectorId] = {
+            column: 'right',
+            order: index
+        };
+    });
+
+    // Save changes
+    saveAllSupermarkets();
+
+    // Update map and shopping list views
+    renderMapPage();
 }
 
 // Create sector configuration card
