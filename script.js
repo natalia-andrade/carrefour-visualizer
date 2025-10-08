@@ -382,15 +382,18 @@ function analyzeGroceryList() {
         if (!matched) {
             for (const [keyword, sectorId] of Object.entries(productMapping)) {
                 if (item.includes(keyword) || keyword.includes(item)) {
-                    if (!sectorsFound[sectorId]) {
-                        sectorsFound[sectorId] = {
-                            name: supermarketData[sectorId].name,
-                            items: []
-                        };
+                    // Only use productMapping if the sector exists in current supermarket
+                    if (supermarketData[sectorId]) {
+                        if (!sectorsFound[sectorId]) {
+                            sectorsFound[sectorId] = {
+                                name: supermarketData[sectorId].name,
+                                items: []
+                            };
+                        }
+                        sectorsFound[sectorId].items.push(item);
+                        matched = true;
+                        break;
                     }
-                    sectorsFound[sectorId].items.push(item);
-                    matched = true;
-                    break;
                 }
             }
         }
@@ -425,6 +428,7 @@ function displayResults(sectorsFound, unmatchedItems) {
     // Sort sectors by ID
     const sortedSectors = Object.keys(sectorsFound).sort((a, b) => a - b);
 
+    // Show results section if there are sectors OR unmatched items
     if (sortedSectors.length === 0 && unmatchedItems.length === 0) {
         resultsSection.classList.add('hidden');
         alert('Nenhum item foi reconhecido. Tente adicionar mais detalhes!');
@@ -434,69 +438,75 @@ function displayResults(sectorsFound, unmatchedItems) {
     // Show results section
     resultsSection.classList.remove('hidden');
 
-    // Create supermarket layout structure
-    const layoutHTML = `
-        <div class="supermarket-layout">
-            <div class="entrance-marker">ENTRADA</div>
-            <div class="aisle-container">
-                <div class="aisle-left"></div>
-                <div class="aisle-corridor">
-                    <div class="aisle-label">Corredor</div>
+    // Only create supermarket layout if there are sectors found
+    if (sortedSectors.length > 0) {
+        // Create supermarket layout structure
+        const layoutHTML = `
+            <div class="supermarket-layout">
+                <div class="entrance-marker">ENTRADA</div>
+                <div class="aisle-container">
+                    <div class="aisle-left"></div>
+                    <div class="aisle-corridor">
+                        <div class="aisle-label">Corredor</div>
+                    </div>
+                    <div class="aisle-right"></div>
                 </div>
-                <div class="aisle-right"></div>
+                <div class="checkout-marker">CAIXA / SAÍDA</div>
             </div>
-            <div class="checkout-marker">CAIXA / SAÍDA</div>
-        </div>
-    `;
-
-    sectorsContainer.innerHTML = layoutHTML;
-
-    const aisleLeft = sectorsContainer.querySelector('.aisle-left');
-    const aisleRight = sectorsContainer.querySelector('.aisle-right');
-
-    // Display sectors in aisle layout
-    // Odd sectors (1, 3, 5, 7, 9, 11, 13, 15) on LEFT
-    // Even sectors (2, 4, 6, 8, 10, 12, 14) on RIGHT
-    sortedSectors.forEach(sectorId => {
-        const sector = sectorsFound[sectorId];
-        const card = document.createElement('div');
-        const isLeft = parseInt(sectorId) % 2 === 1;
-
-        card.className = `result-sector-card ${isLeft ? 'left' : 'right'}`;
-        card.dataset.sectorId = sectorId;
-        card.style.setProperty('--sector-color', sectorColors[sectorId]);
-        card.style.setProperty('--sector-color-dark', adjustBrightness(sectorColors[sectorId], -20));
-
-        const itemsListHtml = sector.items.map((item, index) => {
-            const itemName = typeof item === 'string' ? item : item.name || item;
-            const itemId = `sector-${sectorId}-item-${index}`;
-            allItems.push(itemId);
-            const isChecked = checkedItems.has(itemId);
-            return `<li data-item-id="${itemId}" class="${isChecked ? 'checked' : ''}">${itemName}</li>`;
-        }).join('');
-
-        card.innerHTML = `
-            <div class="result-sector-number">Setor ${sectorId}</div>
-            <div class="result-sector-name">${sector.name}</div>
-            <ul class="result-sector-items">${itemsListHtml}</ul>
         `;
 
-        // Append to left or right side
-        if (isLeft) {
-            aisleLeft.appendChild(card);
-        } else {
-            aisleRight.appendChild(card);
-        }
+        sectorsContainer.innerHTML = layoutHTML;
 
-        // Add click listeners to items
-        const itemElements = card.querySelectorAll('.result-sector-items li');
-        itemElements.forEach(itemEl => {
-            itemEl.addEventListener('click', () => toggleItem(itemEl, card));
+        const aisleLeft = sectorsContainer.querySelector('.aisle-left');
+        const aisleRight = sectorsContainer.querySelector('.aisle-right');
+
+        // Display sectors in aisle layout
+        // Odd sectors (1, 3, 5, 7, 9, 11, 13, 15) on LEFT
+        // Even sectors (2, 4, 6, 8, 10, 12, 14) on RIGHT
+        sortedSectors.forEach(sectorId => {
+            const sector = sectorsFound[sectorId];
+            const card = document.createElement('div');
+            const isLeft = parseInt(sectorId) % 2 === 1;
+
+            card.className = `result-sector-card ${isLeft ? 'left' : 'right'}`;
+            card.dataset.sectorId = sectorId;
+            card.style.setProperty('--sector-color', sectorColors[sectorId]);
+            card.style.setProperty('--sector-color-dark', adjustBrightness(sectorColors[sectorId], -20));
+
+            const itemsListHtml = sector.items.map((item, index) => {
+                const itemName = typeof item === 'string' ? item : item.name || item;
+                const itemId = `sector-${sectorId}-item-${index}`;
+                allItems.push(itemId);
+                const isChecked = checkedItems.has(itemId);
+                return `<li data-item-id="${itemId}" class="${isChecked ? 'checked' : ''}">${itemName}</li>`;
+            }).join('');
+
+            card.innerHTML = `
+                <div class="result-sector-number">Setor ${sectorId}</div>
+                <div class="result-sector-name">${sector.name}</div>
+                <ul class="result-sector-items">${itemsListHtml}</ul>
+            `;
+
+            // Append to left or right side
+            if (isLeft) {
+                aisleLeft.appendChild(card);
+            } else {
+                aisleRight.appendChild(card);
+            }
+
+            // Add click listeners to items
+            const itemElements = card.querySelectorAll('.result-sector-items li');
+            itemElements.forEach(itemEl => {
+                itemEl.addEventListener('click', () => toggleItem(itemEl, card));
+            });
+
+            // Check if sector is completed
+            updateSectorCompletion(card);
         });
-
-        // Check if sector is completed
-        updateSectorCompletion(card);
-    });
+    } else {
+        // No sectors found - clear the container
+        sectorsContainer.innerHTML = '';
+    }
 
     // Display unmatched items
     if (unmatchedItems.length > 0) {
