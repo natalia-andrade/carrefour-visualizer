@@ -440,34 +440,13 @@ function displayResults(sectorsFound, unmatchedItems) {
 
     // Only create supermarket layout if there are sectors found
     if (sortedSectors.length > 0) {
-        // Create supermarket layout structure
-        const layoutHTML = `
-            <div class="supermarket-layout">
-                <div class="entrance-marker">ENTRADA</div>
-                <div class="aisle-container">
-                    <div class="aisle-left"></div>
-                    <div class="aisle-corridor">
-                        <div class="aisle-label">Corredor</div>
-                    </div>
-                    <div class="aisle-right"></div>
-                </div>
-            </div>
-        `;
+        const currentMarket = supermarkets[activeSupermarketId];
+        const layoutType = currentMarket?.layoutType || 'two-columns';
 
-        sectorsContainer.innerHTML = layoutHTML;
-
-        const aisleLeft = sectorsContainer.querySelector('.aisle-left');
-        const aisleRight = sectorsContainer.querySelector('.aisle-right');
-
-        // Display sectors in aisle layout
-        // Odd sectors (1, 3, 5, 7, 9, 11, 13, 15) on LEFT
-        // Even sectors (2, 4, 6, 8, 10, 12, 14) on RIGHT
-        sortedSectors.forEach(sectorId => {
-            const sector = sectorsFound[sectorId];
+        // Create card creator function for shopping list results
+        const createResultCard = (sectorId, sector) => {
             const card = document.createElement('div');
-            const isLeft = parseInt(sectorId) % 2 === 1;
-
-            card.className = `result-sector-card ${isLeft ? 'left' : 'right'}`;
+            card.className = `result-sector-card`;
             card.dataset.sectorId = sectorId;
             card.style.setProperty('--sector-color', sectorColors[sectorId]);
             card.style.setProperty('--sector-color-dark', adjustBrightness(sectorColors[sectorId], -20));
@@ -486,22 +465,20 @@ function displayResults(sectorsFound, unmatchedItems) {
                 <ul class="result-sector-items">${itemsListHtml}</ul>
             `;
 
-            // Append to left or right side
-            if (isLeft) {
-                aisleLeft.appendChild(card);
-            } else {
-                aisleRight.appendChild(card);
-            }
-
             // Add click listeners to items
-            const itemElements = card.querySelectorAll('.result-sector-items li');
-            itemElements.forEach(itemEl => {
-                itemEl.addEventListener('click', () => toggleItem(itemEl, card));
-            });
+            setTimeout(() => {
+                const itemElements = card.querySelectorAll('.result-sector-items li');
+                itemElements.forEach(itemEl => {
+                    itemEl.addEventListener('click', () => toggleItem(itemEl, card));
+                });
+                updateSectorCompletion(card);
+            }, 0);
 
-            // Check if sector is completed
-            updateSectorCompletion(card);
-        });
+            return card;
+        };
+
+        // Use the generic layout renderer
+        renderSupermarketLayout(sectorsContainer, sectorsFound, layoutType, createResultCard);
     } else {
         // No sectors found - clear the container
         sectorsContainer.innerHTML = '';
@@ -687,6 +664,27 @@ function loadSupermarketData() {
                 createDefaultSupermarket();
             }
 
+            // Migrate existing supermarkets to include sectorPositions
+            let needsSave = false;
+            for (const marketId in supermarkets) {
+                const market = supermarkets[marketId];
+                if (!market.sectorPositions) {
+                    // Migrate: add sectorPositions
+                    market.sectorPositions = {};
+                    needsSave = true;
+                }
+                // Remove old layout properties if they exist
+                if (market.layoutType) {
+                    delete market.layoutType;
+                    delete market.layoutConfig;
+                    needsSave = true;
+                }
+            }
+
+            if (needsSave) {
+                saveAllSupermarkets();
+            }
+
             // Load active supermarket
             if (activeSupermarketId && supermarkets[activeSupermarketId]) {
                 supermarketData = supermarkets[activeSupermarketId].sectors;
@@ -710,6 +708,7 @@ function createDefaultSupermarket() {
         [defaultId]: {
             id: defaultId,
             name: "Supermercado Exemplo",
+            sectorPositions: {},
             sectors: JSON.parse(JSON.stringify(defaultSupermarketData)),
             createdAt: new Date().toISOString()
         }
@@ -779,13 +778,33 @@ function renderMapPage() {
     }
 
     const grid = document.getElementById('supermarketGridMap');
-    grid.innerHTML = '';
+    const currentMarket = supermarkets[activeSupermarketId];
+    const layoutType = currentMarket?.layoutType || 'two-columns';
 
-    // Create aisle layout structure like in shopping list
+    renderSupermarketLayout(grid, supermarketData, layoutType, createSectorCard);
+}
+
+// Generic function to render supermarket layout
+function renderSupermarketLayout(container, sectorsData, layoutType, cardCreatorFn) {
+    container.innerHTML = '';
+
+    const sortedSectors = Object.keys(sectorsData).sort((a, b) => parseInt(a) - parseInt(b));
+
+    if (sortedSectors.length === 0) {
+        container.innerHTML = '<p style="text-align: center; color: #999; padding: 40px;">Nenhum setor configurado</p>';
+        return;
+    }
+
+    // Always use two-column layout with drag and drop positions
+    renderTwoColumnLayout(container, sectorsData, sortedSectors, cardCreatorFn);
+}
+
+// Two column layout with saved positions
+function renderTwoColumnLayout(container, sectorsData, sortedSectors, cardCreatorFn) {
     const layoutHTML = `
         <div class="supermarket-layout">
             <div class="entrance-marker">ENTRADA</div>
-            <div class="aisle-container">
+            <div class="aisle-container two-columns">
                 <div class="aisle-left"></div>
                 <div class="aisle-corridor">
                     <div class="aisle-label">Corredor</div>
@@ -795,24 +814,23 @@ function renderMapPage() {
         </div>
     `;
 
-    grid.innerHTML = layoutHTML;
+    container.innerHTML = layoutHTML;
 
-    const aisleLeft = grid.querySelector('.aisle-left');
-    const aisleRight = grid.querySelector('.aisle-right');
+    const aisleLeft = container.querySelector('.aisle-left');
+    const aisleRight = container.querySelector('.aisle-right');
 
-    // Sort sectors and display in aisle layout
-    // Odd sectors (1, 3, 5, 7, 9, 11, 13, 15) on LEFT
-    // Even sectors (2, 4, 6, 8, 10, 12, 14) on RIGHT
-    Object.keys(supermarketData).sort((a, b) => parseInt(a) - parseInt(b)).forEach(sectorNumber => {
-        const sector = supermarketData[sectorNumber];
-        const card = createSectorCard(sectorNumber, sector);
-        const isLeft = parseInt(sectorNumber) % 2 === 1;
+    const currentMarket = supermarkets[activeSupermarketId];
+    const sectorPositions = currentMarket?.sectorPositions || {};
 
-        // Add left/right class for positioning
-        card.classList.add(isLeft ? 'left' : 'right');
+    // Use saved positions or default to odd/even
+    sortedSectors.forEach(sectorNumber => {
+        const sector = sectorsData[sectorNumber];
+        const card = cardCreatorFn(sectorNumber, sector);
+        const position = sectorPositions[sectorNumber] || (parseInt(sectorNumber) % 2 === 1 ? 'left' : 'right');
 
-        // Append to appropriate side
-        if (isLeft) {
+        card.classList.add(position);
+
+        if (position === 'left') {
             aisleLeft.appendChild(card);
         } else {
             aisleRight.appendChild(card);
@@ -828,6 +846,9 @@ function renderConfigPage() {
         nameElement.textContent = supermarkets[activeSupermarketId].name;
     }
 
+    // Render layout editor
+    renderLayoutEditor();
+
     const container = document.getElementById('sectorsConfig');
     container.innerHTML = '';
 
@@ -836,6 +857,127 @@ function renderConfigPage() {
         const card = createSectorConfigCard(sectorId, sector);
         container.appendChild(card);
     });
+}
+
+// Render layout editor with drag and drop
+function renderLayoutEditor() {
+    const leftZone = document.querySelector('#layoutLeft .sector-drop-zone');
+    const rightZone = document.querySelector('#layoutRight .sector-drop-zone');
+
+    if (!leftZone || !rightZone) return;
+
+    leftZone.innerHTML = '';
+    rightZone.innerHTML = '';
+
+    const currentMarket = supermarkets[activeSupermarketId];
+    if (!currentMarket) return;
+
+    // Initialize sectorPositions if not exists
+    if (!currentMarket.sectorPositions) {
+        currentMarket.sectorPositions = {};
+    }
+
+    // Render sectors in their positions
+    Object.keys(supermarketData).sort((a, b) => parseInt(a) - parseInt(b)).forEach(sectorId => {
+        const sector = supermarketData[sectorId];
+        const position = currentMarket.sectorPositions[sectorId] || (parseInt(sectorId) % 2 === 1 ? 'left' : 'right');
+
+        const sectorCard = createDraggableSector(sectorId, sector);
+
+        if (position === 'left') {
+            leftZone.appendChild(sectorCard);
+        } else {
+            rightZone.appendChild(sectorCard);
+        }
+    });
+
+    // Setup drop zones
+    setupDropZone(leftZone, 'left');
+    setupDropZone(rightZone, 'right');
+}
+
+// Create draggable sector card
+function createDraggableSector(sectorId, sector) {
+    const card = document.createElement('div');
+    card.className = 'draggable-sector';
+    card.draggable = true;
+    card.dataset.sectorId = sectorId;
+
+    const itemCount = sector.items.length;
+    card.innerHTML = `
+        <div class="sector-title">Setor ${sectorId} - ${sector.name}</div>
+        <div class="sector-info">${itemCount} ${itemCount === 1 ? 'item' : 'itens'}</div>
+    `;
+
+    // Drag events
+    card.addEventListener('dragstart', handleDragStart);
+    card.addEventListener('dragend', handleDragEnd);
+
+    return card;
+}
+
+// Setup drop zone
+function setupDropZone(zone, column) {
+    zone.addEventListener('dragover', handleDragOver);
+    zone.addEventListener('drop', (e) => handleDrop(e, column));
+    zone.addEventListener('dragleave', handleDragLeave);
+}
+
+let draggedElement = null;
+
+function handleDragStart(e) {
+    draggedElement = e.target;
+    e.target.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/html', e.target.innerHTML);
+}
+
+function handleDragEnd(e) {
+    e.target.classList.remove('dragging');
+}
+
+function handleDragOver(e) {
+    if (e.preventDefault) {
+        e.preventDefault();
+    }
+    e.dataTransfer.dropEffect = 'move';
+    e.currentTarget.classList.add('drag-over');
+    return false;
+}
+
+function handleDragLeave(e) {
+    e.currentTarget.classList.remove('drag-over');
+}
+
+function handleDrop(e, column) {
+    if (e.stopPropagation) {
+        e.stopPropagation();
+    }
+    e.preventDefault();
+
+    e.currentTarget.classList.remove('drag-over');
+
+    if (draggedElement) {
+        const sectorId = draggedElement.dataset.sectorId;
+        const currentMarket = supermarkets[activeSupermarketId];
+
+        // Update position
+        if (!currentMarket.sectorPositions) {
+            currentMarket.sectorPositions = {};
+        }
+        currentMarket.sectorPositions[sectorId] = column;
+
+        // Move the element
+        e.currentTarget.appendChild(draggedElement);
+
+        // Save changes
+        saveAllSupermarkets();
+
+        // Update map and shopping list views
+        renderMapPage();
+    }
+
+    return false;
 }
 
 // Create sector configuration card
@@ -1343,6 +1485,7 @@ function createNewSupermarket() {
     supermarkets[newId] = {
         id: newId,
         name: name.trim(),
+        sectorPositions: {},
         sectors: {},
         createdAt: new Date().toISOString()
     };

@@ -62,6 +62,25 @@
                 <h2>⚙️ Configuração do Supermercado</h2>
                 <p>Gerencie os setores e produtos do <strong id="configSupermarketName"></strong></p>
 
+                <div class="layout-config-section">
+                    <h3>📐 Organizar Layout do Supermercado</h3>
+                    <p class="layout-instructions">Arraste os setores para organizar o layout do seu supermercado. Esquerda e direita representam os lados do corredor.</p>
+
+                    <div class="layout-editor">
+                        <div class="layout-column" id="layoutLeft" data-column="left">
+                            <h4>← Esquerda</h4>
+                            <div class="sector-drop-zone"></div>
+                        </div>
+                        <div class="layout-corridor-visual">
+                            <div class="corridor-label">Corredor</div>
+                        </div>
+                        <div class="layout-column" id="layoutRight" data-column="right">
+                            <h4>Direita →</h4>
+                            <div class="sector-drop-zone"></div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="config-actions">
                     <button id="addSectorButton" class="action-button">➕ Adicionar Setor</button>
                     <button id="resetConfigButton" class="action-button danger">🔄 Resetar para Padrão</button>

@@ -283,16 +283,41 @@ header p {
     content: '🚪 ';
 }
 
+/* Single column layout */
+.single-column-container {
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+}
+
+.aisle-single {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    max-width: 600px;
+    width: 100%;
+}
+
+/* Two columns layout (default) */
 .aisle-container {
     display: grid;
-    grid-template-columns: 1fr 80px 1fr;
     gap: 0;
     position: relative;
     min-height: 500px;
 }
 
+.aisle-container.two-columns {
+    grid-template-columns: 1fr 80px 1fr;
+}
+
+/* Three columns layout */
+.aisle-container.three-columns {
+    grid-template-columns: 1fr 60px 1fr 60px 1fr;
+}
+
 .aisle-left,
-.aisle-right {
+.aisle-right,
+.aisle-middle {
     display: flex;
     flex-direction: column;
     gap: 20px;
@@ -763,6 +788,139 @@ header p {
     margin-bottom: 25px;
 }
 
+/* Layout Configuration Section */
+.layout-config-section {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 30px;
+    border-left: 4px solid #667eea;
+}
+
+.layout-config-section h3 {
+    color: #333;
+    margin-bottom: 10px;
+    font-size: 1.3rem;
+}
+
+.layout-instructions {
+    color: #666;
+    font-size: 0.95rem;
+    margin-bottom: 20px;
+}
+
+/* Drag and Drop Layout Editor */
+.layout-editor {
+    display: grid;
+    grid-template-columns: 1fr 80px 1fr;
+    gap: 10px;
+    min-height: 300px;
+    background: white;
+    padding: 15px;
+    border-radius: 10px;
+    border: 2px dashed #ddd;
+}
+
+.layout-column {
+    background: #fafafa;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 10px;
+}
+
+.layout-column h4 {
+    text-align: center;
+    color: #666;
+    margin-bottom: 10px;
+    font-size: 1rem;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #e0e0e0;
+}
+
+.sector-drop-zone {
+    min-height: 250px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.layout-corridor-visual {
+    background: linear-gradient(180deg,
+        rgba(200, 200, 200, 0.2) 0%,
+        rgba(180, 180, 180, 0.3) 50%,
+        rgba(200, 200, 200, 0.2) 100%);
+    border-left: 2px dashed rgba(0, 0, 0, 0.1);
+    border-right: 2px dashed rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.layout-corridor-visual::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    width: 2px;
+    background: repeating-linear-gradient(
+        to bottom,
+        rgba(0, 0, 0, 0.1),
+        rgba(0, 0, 0, 0.1) 20px,
+        transparent 20px,
+        transparent 40px
+    );
+}
+
+.corridor-label {
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    font-weight: bold;
+    color: rgba(0, 0, 0, 0.2);
+    font-size: 1.2rem;
+    letter-spacing: 8px;
+    text-transform: uppercase;
+}
+
+/* Draggable Sector Card */
+.draggable-sector {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 12px;
+    border-radius: 8px;
+    cursor: move;
+    transition: all 0.3s;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    user-select: none;
+}
+
+.draggable-sector:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(102, 126, 234, 0.3);
+}
+
+.draggable-sector.dragging {
+    opacity: 0.5;
+    cursor: grabbing;
+}
+
+.draggable-sector .sector-title {
+    font-weight: bold;
+    margin-bottom: 4px;
+}
+
+.draggable-sector .sector-info {
+    font-size: 0.85rem;
+    opacity: 0.9;
+}
+
+.sector-drop-zone.drag-over {
+    background: rgba(102, 126, 234, 0.1);
+    border: 2px dashed #667eea;
+    border-radius: 8px;
+}
+
 .config-actions {
     display: flex;
     gap: 15px;
@@ -1042,13 +1200,18 @@ header p {
         padding: 20px;
     }
 
-    .aisle-container {
+    .aisle-container.two-columns {
         grid-template-columns: 1fr 40px 1fr;
         min-height: auto;
     }
 
+    .aisle-container.three-columns {
+        grid-template-columns: 1fr 30px 1fr 30px 1fr;
+    }
+
     .aisle-left,
-    .aisle-right {
+    .aisle-right,
+    .aisle-middle {
         padding: 10px;
         gap: 15px;
     }
@@ -1136,9 +1299,17 @@ header p {
     }
 
     /* Aisle layout - simplified for mobile */
-    .aisle-container {
+    .aisle-container.two-columns {
         grid-template-columns: 1fr 30px 1fr;
         gap: 0;
+    }
+
+    .aisle-container.three-columns {
+        grid-template-columns: 1fr 20px 1fr 20px 1fr;
+    }
+
+    .single-column-container {
+        padding: 10px;
     }
 
     .aisle-corridor {
@@ -1168,7 +1339,8 @@ header p {
     }
 
     .aisle-left,
-    .aisle-right {
+    .aisle-right,
+    .aisle-middle {
         padding: 5px;
         gap: 12px;
     }
