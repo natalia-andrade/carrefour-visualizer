@@ -989,6 +989,55 @@ header p {
     position: relative;
 }
 
+/* Mobile move buttons */
+.sector-move-buttons {
+    display: none;
+    gap: 4px;
+    margin-top: 8px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.move-btn {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 6px;
+    width: 36px;
+    height: 36px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.move-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.1);
+}
+
+.move-btn:active {
+    transform: scale(0.95);
+    background: rgba(255, 255, 255, 0.4);
+}
+
+/* Show move buttons on mobile */
+@media (max-width: 768px) {
+    .sector-move-buttons {
+        display: flex;
+    }
+
+    .draggable-sector {
+        cursor: default;
+    }
+
+    .draggable-sector:hover {
+        transform: none;
+    }
+}
+
 .config-actions {
     display: flex;
     gap: 15px;

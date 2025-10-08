@@ -972,18 +972,30 @@ function createDraggableSector(sectorId, sector) {
                    onchange="updateSectorNumber('${sectorId}', this.value)"
                    onclick="event.stopPropagation()"
                    onmousedown="event.stopPropagation()"
+                   ontouchstart="event.stopPropagation()"
                    placeholder="#"
                    title="Número do setor">
             <span class="sector-name">${sector.name}</span>
         </div>
         <div class="sector-info">${itemCount} ${itemCount === 1 ? 'item' : 'itens'}</div>
+        <div class="sector-move-buttons">
+            <button class="move-btn move-up" onclick="moveSectorUp('${sectorId}')" title="Mover para cima">↑</button>
+            <button class="move-btn move-down" onclick="moveSectorDown('${sectorId}')" title="Mover para baixo">↓</button>
+            <button class="move-btn move-left" onclick="moveSectorToColumn('${sectorId}', 'left')" title="Mover para esquerda">←</button>
+            <button class="move-btn move-right" onclick="moveSectorToColumn('${sectorId}', 'right')" title="Mover para direita">→</button>
+        </div>
     `;
 
-    // Drag events
+    // Drag events (desktop)
     card.addEventListener('dragstart', handleDragStart);
     card.addEventListener('dragend', handleDragEnd);
     card.addEventListener('dragover', handleDragOverCard);
     card.addEventListener('drop', handleDropOnCard);
+
+    // Touch events (mobile)
+    card.addEventListener('touchstart', handleTouchStart, { passive: false });
+    card.addEventListener('touchmove', handleTouchMove, { passive: false });
+    card.addEventListener('touchend', handleTouchEnd);
 
     return card;
 }
@@ -996,6 +1008,10 @@ function setupDropZone(zone, column) {
 }
 
 let draggedElement = null;
+let touchedElement = null;
+let touchStartY = 0;
+let touchStartX = 0;
+let isDragging = false;
 
 function handleDragStart(e) {
     draggedElement = e.target;
@@ -1006,6 +1022,95 @@ function handleDragStart(e) {
 
 function handleDragEnd(e) {
     e.target.classList.remove('dragging');
+}
+
+// Touch event handlers for mobile
+function handleTouchStart(e) {
+    // Don't interfere with input fields
+    if (e.target.tagName === 'INPUT') {
+        return;
+    }
+
+    const card = e.currentTarget;
+    touchedElement = card;
+    isDragging = false;
+
+    const touch = e.touches[0];
+    touchStartY = touch.clientY;
+    touchStartX = touch.clientX;
+
+    // Small delay to distinguish between tap and drag
+    setTimeout(() => {
+        if (touchedElement === card) {
+            isDragging = true;
+            card.classList.add('dragging');
+            draggedElement = card;
+        }
+    }, 150);
+}
+
+function handleTouchMove(e) {
+    if (!touchedElement || !isDragging) {
+        return;
+    }
+
+    e.preventDefault(); // Prevent scrolling while dragging
+
+    const touch = e.touches[0];
+    const currentY = touch.clientY;
+    const currentX = touch.clientX;
+
+    // Move the element visually
+    touchedElement.style.position = 'fixed';
+    touchedElement.style.zIndex = '1000';
+    touchedElement.style.left = currentX - touchedElement.offsetWidth / 2 + 'px';
+    touchedElement.style.top = currentY - touchedElement.offsetHeight / 2 + 'px';
+    touchedElement.style.opacity = '0.8';
+    touchedElement.style.transform = 'rotate(3deg)';
+
+    // Find element under touch point
+    touchedElement.style.pointerEvents = 'none';
+    const elementBelow = document.elementFromPoint(currentX, currentY);
+    touchedElement.style.pointerEvents = 'auto';
+
+    if (elementBelow) {
+        // Check if over a drop zone
+        const dropZone = elementBelow.closest('.sector-drop-zone');
+        if (dropZone) {
+            const container = dropZone;
+            const afterElement = getDragAfterElement(container, currentY);
+
+            if (afterElement == null) {
+                container.appendChild(draggedElement);
+            } else if (afterElement !== draggedElement) {
+                container.insertBefore(draggedElement, afterElement);
+            }
+        }
+    }
+}
+
+function handleTouchEnd(e) {
+    if (!touchedElement) {
+        return;
+    }
+
+    // Reset visual styles
+    touchedElement.style.position = '';
+    touchedElement.style.zIndex = '';
+    touchedElement.style.left = '';
+    touchedElement.style.top = '';
+    touchedElement.style.opacity = '';
+    touchedElement.style.transform = '';
+    touchedElement.classList.remove('dragging');
+
+    if (isDragging && draggedElement) {
+        // Recalculate orders after drop
+        recalculateOrders();
+    }
+
+    touchedElement = null;
+    draggedElement = null;
+    isDragging = false;
 }
 
 function handleDragOver(e) {
@@ -1126,6 +1231,91 @@ function recalculateOrders() {
     saveAllSupermarkets();
 
     // Update map and shopping list views
+    renderMapPage();
+}
+
+// Move sector functions for mobile buttons
+function moveSectorUp(sectorId) {
+    const currentMarket = supermarkets[activeSupermarketId];
+    if (!currentMarket || !currentMarket.sectorPositions[sectorId]) return;
+
+    const position = currentMarket.sectorPositions[sectorId];
+    const column = position.column;
+    const currentOrder = position.order;
+
+    if (currentOrder === 0) return; // Already at top
+
+    // Find sector above
+    const sectorsInColumn = Object.keys(currentMarket.sectorPositions)
+        .filter(id => currentMarket.sectorPositions[id].column === column)
+        .sort((a, b) => currentMarket.sectorPositions[a].order - currentMarket.sectorPositions[b].order);
+
+    const currentIndex = sectorsInColumn.indexOf(sectorId);
+    if (currentIndex > 0) {
+        const aboveSectorId = sectorsInColumn[currentIndex - 1];
+
+        // Swap orders
+        const tempOrder = currentMarket.sectorPositions[sectorId].order;
+        currentMarket.sectorPositions[sectorId].order = currentMarket.sectorPositions[aboveSectorId].order;
+        currentMarket.sectorPositions[aboveSectorId].order = tempOrder;
+
+        saveAllSupermarkets();
+        renderLayoutEditor();
+        renderMapPage();
+    }
+}
+
+function moveSectorDown(sectorId) {
+    const currentMarket = supermarkets[activeSupermarketId];
+    if (!currentMarket || !currentMarket.sectorPositions[sectorId]) return;
+
+    const position = currentMarket.sectorPositions[sectorId];
+    const column = position.column;
+
+    // Find sector below
+    const sectorsInColumn = Object.keys(currentMarket.sectorPositions)
+        .filter(id => currentMarket.sectorPositions[id].column === column)
+        .sort((a, b) => currentMarket.sectorPositions[a].order - currentMarket.sectorPositions[b].order);
+
+    const currentIndex = sectorsInColumn.indexOf(sectorId);
+    if (currentIndex < sectorsInColumn.length - 1) {
+        const belowSectorId = sectorsInColumn[currentIndex + 1];
+
+        // Swap orders
+        const tempOrder = currentMarket.sectorPositions[sectorId].order;
+        currentMarket.sectorPositions[sectorId].order = currentMarket.sectorPositions[belowSectorId].order;
+        currentMarket.sectorPositions[belowSectorId].order = tempOrder;
+
+        saveAllSupermarkets();
+        renderLayoutEditor();
+        renderMapPage();
+    }
+}
+
+function moveSectorToColumn(sectorId, targetColumn) {
+    const currentMarket = supermarkets[activeSupermarketId];
+    if (!currentMarket || !currentMarket.sectorPositions[sectorId]) return;
+
+    const position = currentMarket.sectorPositions[sectorId];
+
+    if (position.column === targetColumn) return; // Already in target column
+
+    // Get max order in target column
+    const sectorsInTargetColumn = Object.keys(currentMarket.sectorPositions)
+        .filter(id => currentMarket.sectorPositions[id].column === targetColumn);
+
+    const maxOrder = sectorsInTargetColumn.length > 0
+        ? Math.max(...sectorsInTargetColumn.map(id => currentMarket.sectorPositions[id].order))
+        : -1;
+
+    // Move to target column at the end
+    currentMarket.sectorPositions[sectorId] = {
+        column: targetColumn,
+        order: maxOrder + 1
+    };
+
+    saveAllSupermarkets();
+    renderLayoutEditor();
     renderMapPage();
 }
 
