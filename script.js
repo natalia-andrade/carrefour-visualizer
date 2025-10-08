@@ -313,11 +313,35 @@ function displayResults(sectorsFound, unmatchedItems) {
     // Show results section
     resultsSection.classList.remove('hidden');
 
-    // Display sectors
+    // Create supermarket layout structure
+    const layoutHTML = `
+        <div class="supermarket-layout">
+            <div class="entrance-marker">ENTRADA</div>
+            <div class="aisle-container">
+                <div class="aisle-left"></div>
+                <div class="aisle-corridor">
+                    <div class="aisle-label">Corredor</div>
+                </div>
+                <div class="aisle-right"></div>
+            </div>
+            <div class="checkout-marker">CAIXA / SAÍDA</div>
+        </div>
+    `;
+
+    sectorsContainer.innerHTML = layoutHTML;
+
+    const aisleLeft = sectorsContainer.querySelector('.aisle-left');
+    const aisleRight = sectorsContainer.querySelector('.aisle-right');
+
+    // Display sectors in aisle layout
+    // Odd sectors (1, 3, 5, 7, 9, 11, 13, 15) on LEFT
+    // Even sectors (2, 4, 6, 8, 10, 12, 14) on RIGHT
     sortedSectors.forEach(sectorId => {
         const sector = sectorsFound[sectorId];
         const card = document.createElement('div');
-        card.className = 'result-sector-card';
+        const isLeft = parseInt(sectorId) % 2 === 1;
+
+        card.className = `result-sector-card ${isLeft ? 'left' : 'right'}`;
         card.dataset.sectorId = sectorId;
         card.style.setProperty('--sector-color', sectorColors[sectorId]);
         card.style.setProperty('--sector-color-dark', adjustBrightness(sectorColors[sectorId], -20));
@@ -335,7 +359,12 @@ function displayResults(sectorsFound, unmatchedItems) {
             <ul class="result-sector-items">${itemsListHtml}</ul>
         `;
 
-        sectorsContainer.appendChild(card);
+        // Append to left or right side
+        if (isLeft) {
+            aisleLeft.appendChild(card);
+        } else {
+            aisleRight.appendChild(card);
+        }
 
         // Add click listeners to items
         const itemElements = card.querySelectorAll('.result-sector-items li');
