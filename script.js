@@ -1,70 +1,161 @@
-// Default supermarket data structure
+// Default supermarket data structure (with enhanced structure for keywords)
 const defaultSupermarketData = {
     1: {
         name: "Hortifruti",
-        items: ["Frutas", "Verduras", "Legumes", "Temperos Frescos"]
+        items: [
+            { name: "Frutas", keywords: ["frutas", "fruta", "maçã", "maça", "banana", "laranja", "uva", "morango", "melancia", "melão", "mamão", "abacaxi", "pera", "manga", "limão"] },
+            { name: "Verduras", keywords: ["verduras", "verdura", "alface", "rúcula", "rucula", "couve", "espinafre", "agrião", "acelga"] },
+            { name: "Legumes", keywords: ["legumes", "legume", "tomate", "cebola", "batata", "cenoura", "abobrinha", "berinjela", "pimentão", "pimentao", "brocolis", "brócolis", "couve-flor"] },
+            { name: "Temperos Frescos", keywords: ["temperos frescos", "salsa", "cebolinha", "coentro", "manjericão", "manjericao"] }
+        ]
     },
     2: {
         name: "Padaria",
-        items: ["Pães", "Bolos e Tortas", "Salgados"]
+        items: [
+            { name: "Pães", keywords: ["pães", "pão", "pao", "pão francês", "pao frances", "pão de forma", "baguete", "bisnaga"] },
+            { name: "Bolos e Tortas", keywords: ["bolos", "bolo", "torta", "tortas"] },
+            { name: "Salgados", keywords: ["salgados", "salgado", "coxinha", "pastel", "esfiha", "empada"] }
+        ]
     },
     3: {
         name: "Açougue",
-        items: ["Carnes Bovinas", "Carnes Suínas", "Aves", "Carnes Especiais"]
+        items: [
+            { name: "Carnes Bovinas", keywords: ["carnes bovinas", "carne", "carne bovina", "picanha", "alcatra", "filé", "file", "costela", "patinho", "moída", "moida"] },
+            { name: "Carnes Suínas", keywords: ["carnes suínas", "carne suína", "porco", "lombo", "pernil", "linguiça", "linguica", "bacon"] },
+            { name: "Aves", keywords: ["aves", "frango", "peito de frango", "coxa", "sobrecoxa", "asa", "chester", "peru"] },
+            { name: "Carnes Especiais", keywords: ["carnes especiais", "cordeiro", "cabrito"] }
+        ]
     },
     4: {
         name: "Frios e Laticínios",
-        items: ["Queijos", "Presuntos e Mortadelas", "Iogurtes", "Leite", "Manteiga e Margarina", "Requeijão"]
+        items: [
+            { name: "Queijos", keywords: ["queijos", "queijo", "mussarela", "prato", "minas", "parmesão", "parmesao", "provolone"] },
+            { name: "Presuntos e Mortadelas", keywords: ["presunto", "mortadela", "presuntos"] },
+            { name: "Iogurtes", keywords: ["iogurtes", "iogurte", "yogurt"] },
+            { name: "Leite", keywords: ["leite", "leite integral", "leite desnatado"] },
+            { name: "Manteiga e Margarina", keywords: ["manteiga", "margarina"] },
+            { name: "Requeijão", keywords: ["requeijão", "requeijao", "catupiry"] }
+        ]
     },
     5: {
         name: "Mercearia Salgada",
-        items: ["Arroz", "Feijão", "Macarrão", "Óleo e Azeite", "Molhos", "Temperos Secos", "Enlatados", "Farinha"]
+        items: [
+            { name: "Arroz", keywords: ["arroz"] },
+            { name: "Feijão", keywords: ["feijão", "feijao"] },
+            { name: "Macarrão", keywords: ["macarrão", "macarrao", "massa", "espaguete", "penne"] },
+            { name: "Óleo e Azeite", keywords: ["óleo", "oleo", "azeite"] },
+            { name: "Molhos", keywords: ["molhos", "molho", "molho de tomate", "catchup", "ketchup", "mostarda", "maionese"] },
+            { name: "Temperos Secos", keywords: ["temperos secos", "sal", "pimenta", "alho", "orégano", "oregano", "cominho"] },
+            { name: "Enlatados", keywords: ["enlatados", "atum", "sardinha", "milho", "ervilha", "seleta"] },
+            { name: "Farinha", keywords: ["farinha", "farinha de trigo", "fubá", "fuba"] }
+        ]
     },
     6: {
         name: "Mercearia Doce",
-        items: ["Açúcar", "Café", "Achocolatado", "Biscoitos e Bolachas", "Chocolates", "Doces e Sobremesas", "Cereais Matinais"]
+        items: [
+            { name: "Açúcar", keywords: ["açúcar", "açucar", "acucar"] },
+            { name: "Café", keywords: ["café", "cafe"] },
+            { name: "Achocolatado", keywords: ["achocolatado", "nescau", "toddy"] },
+            { name: "Biscoitos e Bolachas", keywords: ["biscoitos", "biscoito", "bolacha", "bolachas", "cream cracker"] },
+            { name: "Chocolates", keywords: ["chocolates", "chocolate", "bombom", "barra de chocolate"] },
+            { name: "Doces e Sobremesas", keywords: ["doces", "doce", "sobremesas", "sobremesa", "gelatina", "pudim"] },
+            { name: "Cereais Matinais", keywords: ["cereais", "cereal", "sucrilhos", "granola", "aveia"] }
+        ]
     },
     7: {
         name: "Bebidas",
-        items: ["Refrigerantes", "Sucos", "Águas", "Cervejas", "Vinhos", "Destilados"]
+        items: [
+            { name: "Refrigerantes", keywords: ["refrigerantes", "refrigerante", "coca", "coca-cola", "guaraná", "guarana", "fanta", "sprite"] },
+            { name: "Sucos", keywords: ["sucos", "suco"] },
+            { name: "Águas", keywords: ["águas", "água", "agua"] },
+            { name: "Cervejas", keywords: ["cervejas", "cerveja"] },
+            { name: "Vinhos", keywords: ["vinhos", "vinho"] },
+            { name: "Destilados", keywords: ["destilados", "vodka", "whisky", "cachaça", "cachaca", "gin"] }
+        ]
     },
     8: {
         name: "Congelados",
-        items: ["Sorvetes", "Pizzas Congeladas", "Lasanhas e Pratos Prontos", "Vegetais Congelados", "Carnes Congeladas"]
+        items: [
+            { name: "Sorvetes", keywords: ["sorvetes", "sorvete", "picolé", "picole"] },
+            { name: "Pizzas Congeladas", keywords: ["pizzas congeladas", "pizza", "pizza congelada"] },
+            { name: "Lasanhas e Pratos Prontos", keywords: ["lasanhas", "lasanha", "pratos prontos"] },
+            { name: "Vegetais Congelados", keywords: ["vegetais congelados", "legumes congelados"] },
+            { name: "Carnes Congeladas", keywords: ["carnes congeladas"] }
+        ]
     },
     9: {
         name: "Higiene Pessoal",
-        items: ["Sabonetes", "Shampoos e Condicionadores", "Cremes Dentais", "Desodorantes", "Papel Higiênico", "Absorventes"]
+        items: [
+            { name: "Sabonetes", keywords: ["sabonetes", "sabonete", "sabão", "sabao"] },
+            { name: "Shampoos e Condicionadores", keywords: ["shampoos", "shampoo", "xampu", "condicionador", "condicionadores"] },
+            { name: "Cremes Dentais", keywords: ["cremes dentais", "creme dental", "pasta de dente", "escova de dente"] },
+            { name: "Desodorantes", keywords: ["desodorantes", "desodorante"] },
+            { name: "Papel Higiênico", keywords: ["papel higiênico", "papel higienico"] },
+            { name: "Absorventes", keywords: ["absorventes", "absorvente"] }
+        ]
     },
     10: {
         name: "Limpeza",
-        items: ["Detergentes", "Sabão em Pó", "Amaciantes", "Desinfetantes", "Esponjas e Panos", "Sacos de Lixo"]
+        items: [
+            { name: "Detergentes", keywords: ["detergentes", "detergente"] },
+            { name: "Sabão em Pó", keywords: ["sabão em pó", "sabao em po"] },
+            { name: "Amaciantes", keywords: ["amaciantes", "amaciante"] },
+            { name: "Desinfetantes", keywords: ["desinfetantes", "desinfetante", "água sanitária", "agua sanitaria", "alvejante"] },
+            { name: "Esponjas e Panos", keywords: ["esponjas", "esponja", "panos", "pano"] },
+            { name: "Sacos de Lixo", keywords: ["sacos de lixo", "saco de lixo"] }
+        ]
     },
     11: {
         name: "Bebê",
-        items: ["Fraldas", "Lenços Umedecidos", "Papinhas", "Leite em Pó Infantil"]
+        items: [
+            { name: "Fraldas", keywords: ["fraldas", "fralda"] },
+            { name: "Lenços Umedecidos", keywords: ["lenços umedecidos", "lenço", "lenco"] },
+            { name: "Papinhas", keywords: ["papinhas", "papinha"] },
+            { name: "Leite em Pó Infantil", keywords: ["leite em pó infantil", "nan", "aptamil"] }
+        ]
     },
     12: {
         name: "Pet Shop",
-        items: ["Ração para Cães", "Ração para Gatos", "Petiscos", "Areia Higiênica"]
+        items: [
+            { name: "Ração para Cães", keywords: ["ração para cães", "ração", "racao", "ração cachorro", "ração cão"] },
+            { name: "Ração para Gatos", keywords: ["ração para gatos", "ração gato"] },
+            { name: "Petiscos", keywords: ["petiscos", "petisco"] },
+            { name: "Areia Higiênica", keywords: ["areia higiênica", "areia", "areia gato"] }
+        ]
     },
     13: {
         name: "Utilidades Domésticas",
-        items: ["Copos e Pratos Descartáveis", "Papel Alumínio", "Filme PVC", "Velas", "Pilhas e Baterias"]
+        items: [
+            { name: "Copos e Pratos Descartáveis", keywords: ["copos descartáveis", "copo descartavel", "copo descartável", "pratos descartáveis", "prato descartavel"] },
+            { name: "Papel Alumínio", keywords: ["papel alumínio", "papel aluminio", "alumínio", "aluminio"] },
+            { name: "Filme PVC", keywords: ["filme pvc", "papel filme"] },
+            { name: "Velas", keywords: ["velas", "vela"] },
+            { name: "Pilhas e Baterias", keywords: ["pilhas", "pilha", "baterias", "bateria"] }
+        ]
     },
     14: {
         name: "Eletrônicos",
-        items: ["Fones de Ouvido", "Carregadores", "Cabos USB"]
+        items: [
+            { name: "Fones de Ouvido", keywords: ["fones de ouvido", "fone", "fone de ouvido"] },
+            { name: "Carregadores", keywords: ["carregadores", "carregador"] },
+            { name: "Cabos USB", keywords: ["cabos usb", "cabo", "cabo usb"] }
+        ]
     },
     15: {
         name: "Bazar",
-        items: ["Panelas", "Talheres", "Organizadores", "Toalhas"]
+        items: [
+            { name: "Panelas", keywords: ["panelas", "panela"] },
+            { name: "Talheres", keywords: ["talheres", "talher", "garfo", "faca", "colher"] },
+            { name: "Organizadores", keywords: ["organizadores", "organizador"] },
+            { name: "Toalhas", keywords: ["toalhas", "toalha"] }
+        ]
     }
 };
 
 // Initialize the supermarket grid
 function initSupermarket() {
     const grid = document.getElementById('supermarketGrid');
+    grid.innerHTML = ''; // Clear existing
 
     Object.keys(supermarketData).forEach(sectorNumber => {
         const sector = supermarketData[sectorNumber];
@@ -78,10 +169,11 @@ function createSectorCard(sectorNumber, sector) {
     const card = document.createElement('div');
     card.className = 'sector-card';
 
+    const itemCount = sector.items.length;
     card.innerHTML = `
         <div class="sector-number">Setor ${sectorNumber}</div>
         <div class="sector-name">${sector.name}</div>
-        <div class="sector-count">${sector.items.length} ${sector.items.length === 1 ? 'item' : 'itens'}</div>
+        <div class="sector-count">${itemCount} ${itemCount === 1 ? 'item' : 'itens'}</div>
     `;
 
     card.addEventListener('click', () => openModal(sectorNumber, sector));
@@ -100,7 +192,8 @@ function openModal(sectorNumber, sector) {
     modalList.innerHTML = '';
     sector.items.forEach(item => {
         const li = document.createElement('li');
-        li.textContent = item;
+        const itemName = typeof item === 'string' ? item : item.name || item;
+        li.textContent = itemName;
         modalList.appendChild(li);
     });
 
@@ -260,17 +353,45 @@ function analyzeGroceryList() {
     items.forEach(item => {
         let matched = false;
 
-        for (const [keyword, sectorId] of Object.entries(productMapping)) {
-            if (item.includes(keyword) || keyword.includes(item)) {
-                if (!sectorsFound[sectorId]) {
-                    sectorsFound[sectorId] = {
-                        name: supermarketData[sectorId].name,
-                        items: []
-                    };
+        // First, try custom keywords from configuration
+        for (const [sectorId, sector] of Object.entries(supermarketData)) {
+            for (const product of sector.items) {
+                const productObj = typeof product === 'string' ? { name: product, keywords: [] } : product;
+                const keywords = productObj.keywords || [];
+
+                // Check if any keyword matches
+                for (const keyword of keywords) {
+                    if (keyword && (item.includes(keyword) || keyword.includes(item))) {
+                        if (!sectorsFound[sectorId]) {
+                            sectorsFound[sectorId] = {
+                                name: sector.name,
+                                items: []
+                            };
+                        }
+                        sectorsFound[sectorId].items.push(item);
+                        matched = true;
+                        break;
+                    }
                 }
-                sectorsFound[sectorId].items.push(item);
-                matched = true;
-                break;
+                if (matched) break;
+            }
+            if (matched) break;
+        }
+
+        // If not matched by custom keywords, try default productMapping
+        if (!matched) {
+            for (const [keyword, sectorId] of Object.entries(productMapping)) {
+                if (item.includes(keyword) || keyword.includes(item)) {
+                    if (!sectorsFound[sectorId]) {
+                        sectorsFound[sectorId] = {
+                            name: supermarketData[sectorId].name,
+                            items: []
+                        };
+                    }
+                    sectorsFound[sectorId].items.push(item);
+                    matched = true;
+                    break;
+                }
             }
         }
 
@@ -347,10 +468,11 @@ function displayResults(sectorsFound, unmatchedItems) {
         card.style.setProperty('--sector-color-dark', adjustBrightness(sectorColors[sectorId], -20));
 
         const itemsListHtml = sector.items.map((item, index) => {
+            const itemName = typeof item === 'string' ? item : item.name || item;
             const itemId = `sector-${sectorId}-item-${index}`;
             allItems.push(itemId);
             const isChecked = checkedItems.has(itemId);
-            return `<li data-item-id="${itemId}" class="${isChecked ? 'checked' : ''}">${item}</li>`;
+            return `<li data-item-id="${itemId}" class="${isChecked ? 'checked' : ''}">${itemName}</li>`;
         }).join('');
 
         card.innerHTML = `
@@ -606,13 +728,35 @@ function createSectorConfigCard(sectorId, sector) {
     card.className = 'sector-config-card';
     card.style.setProperty('--sector-color', sectorColors[sectorId] || '#667eea');
 
-    const productsHTML = sector.items.map((item, index) => `
-        <div class="product-item">
-            <input type="text" value="${item}" data-sector="${sectorId}" data-index="${index}"
-                onchange="updateProductName(${sectorId}, ${index}, this.value)">
-            <button onclick="deleteProduct(${sectorId}, ${index})">✕</button>
+    const productsHTML = sector.items.map((item, index) => {
+        const itemName = typeof item === 'string' ? item : item.name;
+        const itemKeywords = typeof item === 'string' ? [] : (item.keywords || []);
+        const keywordsStr = itemKeywords.join(', ');
+
+        // Create keyword tags display
+        let keywordsDisplay = '';
+        if (itemKeywords.length > 0) {
+            keywordsDisplay = '<div class="keywords-display">' +
+                itemKeywords.map(kw => `<span class="keyword-tag">${kw}</span>`).join('') +
+                '</div>';
+        } else {
+            keywordsDisplay = '<div class="no-keywords">Nenhuma palavra-chave definida</div>';
+        }
+
+        return `
+        <div class="product-item-container">
+            <div class="product-item">
+                <input type="text" value="${itemName}" data-sector="${sectorId}" data-index="${index}"
+                    onchange="updateProductName(${sectorId}, ${index}, this.value)" placeholder="Nome do produto">
+                <button onclick="deleteProduct(${sectorId}, ${index})">✕</button>
+            </div>
+            ${keywordsDisplay}
+            <input type="text" class="product-keywords" value="${keywordsStr}"
+                placeholder="Palavras-chave (separadas por vírgula): ex: coca, refri, refrigerante"
+                onchange="updateProductKeywords(${sectorId}, ${index}, this.value)">
         </div>
-    `).join('');
+        `;
+    }).join('');
 
     card.innerHTML = `
         <div class="sector-config-header">
@@ -645,15 +789,33 @@ function updateSectorName(sectorId, newName) {
 
 function updateProductName(sectorId, index, newName) {
     if (newName.trim()) {
-        supermarketData[sectorId].items[index] = newName.trim();
+        const item = supermarketData[sectorId].items[index];
+        if (typeof item === 'string') {
+            supermarketData[sectorId].items[index] = { name: newName.trim(), keywords: [] };
+        } else {
+            supermarketData[sectorId].items[index].name = newName.trim();
+        }
         saveSupermarketData();
     }
+}
+
+function updateProductKeywords(sectorId, index, keywordsStr) {
+    const keywords = keywordsStr.split(',').map(k => k.trim().toLowerCase()).filter(k => k);
+    const item = supermarketData[sectorId].items[index];
+
+    if (typeof item === 'string') {
+        supermarketData[sectorId].items[index] = { name: item, keywords: keywords };
+    } else {
+        supermarketData[sectorId].items[index].keywords = keywords;
+    }
+
+    saveSupermarketData();
 }
 
 function addProduct(sectorId) {
     const productName = prompt('Nome do novo produto:');
     if (productName && productName.trim()) {
-        supermarketData[sectorId].items.push(productName.trim());
+        supermarketData[sectorId].items.push({ name: productName.trim(), keywords: [] });
         saveSupermarketData();
         renderConfigPage();
     }
