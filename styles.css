@@ -905,6 +905,45 @@ header p {
     cursor: grabbing;
 }
 
+.draggable-sector .sector-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+}
+
+.sector-number-input {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: 0.9rem;
+    font-weight: bold;
+    width: 50px;
+    text-align: center;
+    cursor: text;
+    transition: all 0.2s;
+}
+
+.sector-number-input:hover {
+    background: rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+.sector-number-input:focus {
+    outline: none;
+    background: white;
+    color: #667eea;
+    border-color: white;
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.3);
+}
+
+.draggable-sector .sector-name {
+    font-weight: bold;
+    flex: 1;
+}
+
 .draggable-sector .sector-title {
     font-weight: bold;
     margin-bottom: 4px;
@@ -1063,6 +1102,13 @@ header p {
     border-color: #667eea;
     background: white;
     outline: none;
+}
+
+.sector-id-input {
+    flex: 0 !important;
+    width: 60px !important;
+    text-align: center;
+    color: #667eea !important;
 }
 
 .sector-config-actions {

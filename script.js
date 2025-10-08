@@ -966,7 +966,16 @@ function createDraggableSector(sectorId, sector) {
 
     const itemCount = sector.items.length;
     card.innerHTML = `
-        <div class="sector-title">Setor ${sectorId} - ${sector.name}</div>
+        <div class="sector-header">
+            <input type="text" class="sector-number-input" value="${sectorId}"
+                   data-original-id="${sectorId}"
+                   onchange="updateSectorNumber('${sectorId}', this.value)"
+                   onclick="event.stopPropagation()"
+                   onmousedown="event.stopPropagation()"
+                   placeholder="#"
+                   title="Número do setor">
+            <span class="sector-name">${sector.name}</span>
+        </div>
         <div class="sector-info">${itemCount} ${itemCount === 1 ? 'item' : 'itens'}</div>
     `;
 
@@ -1120,6 +1129,56 @@ function recalculateOrders() {
     renderMapPage();
 }
 
+// Update sector number (ID)
+function updateSectorNumber(oldId, newId) {
+    newId = newId.trim();
+
+    if (!newId) {
+        alert('❌ O número do setor não pode estar vazio!');
+        renderLayoutEditor();
+        renderConfigPage();
+        return;
+    }
+
+    if (newId === oldId) {
+        return; // No change
+    }
+
+    const currentMarket = supermarkets[activeSupermarketId];
+    if (!currentMarket) return;
+
+    // Check if new ID already exists
+    if (supermarketData[newId]) {
+        alert(`❌ Já existe um setor com o número "${newId}"!`);
+        renderLayoutEditor();
+        renderConfigPage();
+        return;
+    }
+
+    // Update sector data
+    supermarketData[newId] = supermarketData[oldId];
+    delete supermarketData[oldId];
+
+    // Update position data
+    if (currentMarket.sectorPositions[oldId]) {
+        currentMarket.sectorPositions[newId] = currentMarket.sectorPositions[oldId];
+        delete currentMarket.sectorPositions[oldId];
+    }
+
+    // Update current supermarket sectors
+    currentMarket.sectors = supermarketData;
+
+    // Save changes
+    saveAllSupermarkets();
+
+    // Refresh UI
+    renderLayoutEditor();
+    renderConfigPage();
+    renderMapPage();
+
+    console.log(`Setor renumerado: ${oldId} → ${newId}`);
+}
+
 // Create sector configuration card
 function createSectorConfigCard(sectorId, sector) {
     const card = document.createElement('div');
@@ -1160,13 +1219,20 @@ function createSectorConfigCard(sectorId, sector) {
         <div class="sector-config-header">
             <div class="sector-config-title">
                 <span style="color: ${sectorColors[sectorId] || '#667eea'}; font-size: 1.5rem;">●</span>
-                <span style="font-weight: bold; color: #666;">Setor ${sectorId}:</span>
+                <span style="font-weight: bold; color: #666;">Setor</span>
+                <input type="text" class="sector-id-input" value="${sectorId}"
+                    onchange="updateSectorNumber('${sectorId}', this.value)"
+                    placeholder="#"
+                    title="Número do setor"
+                    style="width: 60px;">
+                <span style="font-weight: bold; color: #666;">:</span>
                 <input type="text" value="${sector.name}"
-                    onchange="updateSectorName(${sectorId}, this.value)">
+                    onchange="updateSectorName('${sectorId}', this.value)"
+                    placeholder="Nome do setor">
             </div>
             <div class="sector-config-actions">
-                <button class="small-button add" onclick="addProduct(${sectorId})">➕ Produto</button>
-                <button class="small-button delete" onclick="deleteSector(${sectorId})">🗑️ Setor</button>
+                <button class="small-button add" onclick="addProduct('${sectorId}')">➕ Produto</button>
+                <button class="small-button delete" onclick="deleteSector('${sectorId}')">🗑️ Setor</button>
             </div>
         </div>
         <div class="products-list">
