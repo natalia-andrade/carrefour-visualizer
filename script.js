@@ -1281,6 +1281,12 @@ function switchSupermarket(supermarketId) {
     renderMapPage();
     renderConfigPage();
 
+    // Clear the results section in shopping page
+    const resultsSection = document.getElementById('resultsSection');
+    if (resultsSection) {
+        resultsSection.classList.add('hidden');
+    }
+
     // Show confirmation
     console.log('Switched to:', supermarkets[supermarketId].name);
 }
