@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visualização do Supermercado</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🛒 Mapa do Supermercado</h1>
+            <p>Clique em um setor para ver os produtos disponíveis</p>
+        </header>
+
+        <div class="grocery-list-section">
+            <h2>📝 Minha Lista de Compras</h2>
+            <textarea id="groceryListInput" placeholder="Digite sua lista de compras (um item por linha)&#10;Exemplo:&#10;Maçã&#10;Leite&#10;Pão&#10;Frango"></textarea>
+            <button id="analyzeButton">Analisar Lista</button>
+
+            <div id="resultsSection" class="results-section hidden">
+                <h3>Setores que você deve visitar:</h3>
+                <div id="sectorsToVisit"></div>
+                <div id="unmatchedItems" class="unmatched-items hidden">
+                    <h4>Itens não encontrados:</h4>
+                    <ul id="unmatchedList"></ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="supermarket-grid" id="supermarketGrid">
+            <!-- Sectors will be dynamically generated here -->
+        </div>
+
+        <div class="modal" id="modal">
+            <div class="modal-content">
+                <span class="close" id="closeModal">&times;</span>
+                <h2 id="modalTitle"></h2>
+                <ul id="modalList"></ul>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
